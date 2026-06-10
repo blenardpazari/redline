@@ -119,6 +119,15 @@ def get_stats() -> dict[str, int]:
     }
 
 
+def count_recent_requests(ip: str, minutes: int) -> int:
+    conn = get_connection()
+    cursor = conn.execute(
+        "SELECT COUNT(*) FROM log_entries WHERE ip = ? AND timestamp > datetime('now', ?)",
+        (ip, f"-{minutes} minutes"),
+    )
+    return int(cursor.fetchone()[0])
+
+
 def check_alert_cooldown(ip: str, cooldown_minutes: int) -> bool:
     conn = get_connection()
     cursor = conn.execute(
