@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+dist/
+.env
+*.db
+apps/ml/artifacts/*.joblib
+apps/ml/artifacts/*.pkl
+.DS_Store
