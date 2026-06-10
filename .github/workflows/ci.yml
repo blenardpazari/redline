@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  typecheck:
+    name: Dashboard TypeCheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install
+      - run: npm run typecheck
+
+  pytest:
+    name: API Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pytest --tb=short -q
+        env:
+          ADMIN_USERNAME: admin
+          ADMIN_PASSWORD_HASH: "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TsuYDB4l6K.0lRBSWIjSTEV5Mq8K"
+          JWT_SECRET: "ci_placeholder_secret_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          SQLITE_PATH: /tmp/test_redline.db
+          ML_ARTIFACTS_PATH: /tmp/ml_artifacts
