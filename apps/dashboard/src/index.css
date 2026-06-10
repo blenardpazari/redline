@@ -1,0 +1,25 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:         #0a0f1e;
+  --surface:    #111827;
+  --border:     rgba(255, 255, 255, 0.06);
+  --text:       #e2e8f4;
+  --text-muted: #64748b;
+  --normal:     #22c55e;
+  --suspicious: #eab308;
+  --warning:    #f97316;
+  --critical:   #ef4444;
+}
+
+body {
+  background:  var(--bg);
+  color:       var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size:   14px;
+  line-height: 1.5;
+}
