@@ -1,0 +1,9 @@
+dashboard.yourdomain.com {
+    root * /var/www/redline/dashboard
+    file_server
+    try_files {path} /index.html
+}
+
+api.yourdomain.com {
+    reverse_proxy localhost:8000
+}
