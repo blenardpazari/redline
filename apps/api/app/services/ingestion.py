@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 from app.db.queries import LogEntryInsert, count_recent_requests
+from app.services.geoip import lookup as geoip_lookup
 from app.services.scorer import ScorerInput, ScorerModels, score
 from app.types.models import ThreatScore
 
@@ -38,12 +39,20 @@ def parse_and_score(raw: str, models: ScorerModels) -> tuple[LogEntryInsert, Thr
 
     threat = score(models, scorer_input)
 
+    country = data.get("country")
+    lat = data.get("lat")
+    lon = data.get("lon")
+    if not lat or not lon:
+        country_geo, lat, lon = geoip_lookup(ip)
+        if not country:
+            country = country_geo
+
     entry = LogEntryInsert(
         timestamp=timestamp,
         ip=ip,
-        country=data.get("country"),
-        lat=data.get("lat"),
-        lon=data.get("lon"),
+        country=country,
+        lat=lat,
+        lon=lon,
         method=data["method"],
         path=path,
         status_code=int(data["status_code"]),

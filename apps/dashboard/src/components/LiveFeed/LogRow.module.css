@@ -5,7 +5,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 6px 72px 32px 100px 44px 1fr 44px 52px;
+  grid-template-columns: 6px 72px 110px 110px 44px 1fr 44px 52px;
   align-items: center;
   gap: 12px;
   padding: 6px 16px;
@@ -33,6 +33,16 @@
 .country {
   color: var(--text-muted);
   font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.continent {
+  color: var(--text-dim);
+  font-size: 10px;
 }
 
 .ip {

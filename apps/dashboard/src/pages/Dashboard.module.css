@@ -7,22 +7,22 @@
 
 .statsRow {
   flex-shrink: 0;
-  padding: 16px 24px 0;
+  padding: 20px 24px 0;
 }
 
 .main {
   display: grid;
   grid-template-columns: 60fr 40fr;
-  gap: 16px;
+  gap: 12px;
   flex: 1;
   min-height: 0;
-  padding: 16px 24px;
+  padding: 12px 24px;
 }
 
 .widgetRow {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 12px;
   padding: 0 24px;
   flex-shrink: 0;
 }
@@ -30,24 +30,24 @@
 .widget {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 14px 16px;
 }
 
 .widgetTitle {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .08em;
   color: var(--text-muted);
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
 
 .widgetSub {
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  opacity: .7;
+  opacity: .6;
 }
 
 .serverList, .attackerList { display: flex; flex-direction: column; gap: 6px; }
@@ -57,12 +57,23 @@
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
 }
-.serverLeft { display: flex; align-items: center; gap: 4px; }
+
+.serverRow:last-child { border-bottom: none; }
+
+.serverLeft { display: flex; align-items: center; gap: 6px; }
 .serverName { color: var(--text); font-weight: 500; }
-.serverEnv { color: var(--text-muted); font-size: 11px; margin-left: 4px; }
-.serverRight { display: flex; gap: 10px; color: var(--text-muted); font-size: 11px; }
-.serverEvents { }
+.serverEnv {
+  color: var(--text-muted);
+  font-size: 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+.serverRight { display: flex; gap: 12px; color: var(--text-muted); font-size: 11px; }
 .serverSeen { font-family: monospace; }
 
 .attackerRow {
@@ -70,8 +81,11 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
 }
-.rank { color: var(--text-muted); font-size: 11px; width: 20px; flex-shrink: 0; }
+.attackerRow:last-child { border-bottom: none; }
+.rank { color: var(--text-dim); font-size: 11px; width: 20px; flex-shrink: 0; }
 .attackerInfo { flex: 1; display: flex; flex-direction: column; gap: 1px; }
 .attackerIp { color: var(--text); font-family: monospace; font-size: 12px; }
 .attackerMeta { color: var(--text-muted); font-size: 11px; }
@@ -80,5 +94,5 @@
 .chartRow {
   flex-shrink: 0;
   height: 180px;
-  padding: 16px 24px 16px;
+  padding: 0 24px 16px;
 }

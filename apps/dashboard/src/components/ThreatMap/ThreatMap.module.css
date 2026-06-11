@@ -20,7 +20,8 @@
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-size: 11px;
   line-height: 1.7;
-  min-width: 160px;
+  min-width: 200px;
+  white-space: nowrap;
   color: #e2e8f0;
 }
 

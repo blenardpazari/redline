@@ -16,7 +16,7 @@ from ws.stream import broadcast_log
 
 log = logging.getLogger(__name__)
 
-POLL_INTERVAL = 60
+POLL_INTERVAL = 5
 _CF_GRAPHQL = "https://api.cloudflare.com/client/v4/graphql"
 
 _QUERY_ADAPTIVE = """

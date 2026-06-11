@@ -31,8 +31,9 @@ export default function Login() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
+        <div className={styles.logoMark}>RL</div>
         <h1 className={styles.title}>Redline</h1>
-        <p className={styles.subtitle}>Threat Detection Platform</p>
+        <p className={styles.subtitle}>Sign in to continue</p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
             name="username"
