@@ -91,3 +91,207 @@ body {
   border-color: var(--border);
 }
 .dark .leaflet-control-zoom a:hover { background: var(--surface-2); }
+
+/* ── Choices.js (no bundled CSS — full custom) ────────────────────────────── */
+
+
+/* Reset anything Choices might inject via JS */
+.choices { position: relative; margin-bottom: 0; display: block; width: 100%; }
+.choices:focus { outline: none; }
+.choices [hidden] { display: none; }
+
+/* Trigger */
+.choices__inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  height: 36px;
+  padding: 0 30px 0 10px;
+  color: var(--fg);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.choices__inner:hover { border-color: var(--border-strong); }
+.choices.is-focused .choices__inner,
+.choices.is-open    .choices__inner {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
+  outline: none;
+}
+
+/* Caret */
+.choices[data-type*=select-one]::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--dim);
+  transition: transform 0.15s;
+  pointer-events: none;
+}
+.choices.is-open[data-type*=select-one]::after {
+  transform: translateY(-50%) rotate(180deg);
+  border-top-color: var(--accent);
+}
+
+/* Selected item label */
+.choices__list--single { padding: 0; width: 100%; }
+.choices__list--single .choices__item { font-size: 13px; color: var(--fg); line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.choices__placeholder { color: var(--dim); opacity: 1; }
+
+/* Dropdown panel — match trigger width exactly */
+.choices__list--dropdown,
+.choices__list[aria-expanded="false"] {
+  display: none;
+}
+.choices__list--dropdown.is-active,
+.choices__list[aria-expanded="true"] {
+  display: block;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 100%;
+  width: max-content;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2), 0 2px 6px rgba(0,0,0,.1);
+  overflow: hidden;
+  z-index: 200;
+  box-sizing: border-box;
+}
+
+/* Hide search input (we disabled it) */
+.choices__list--dropdown .choices__input,
+.choices__list[aria-expanded] .choices__input { display: none; }
+
+/* Items */
+.choices__list--dropdown .choices__list,
+.choices__list[aria-expanded] .choices__list { padding: 3px; }
+
+.choices__list--dropdown .choices__item,
+.choices__list[aria-expanded] .choices__item {
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--muted);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+.choices__list--dropdown .choices__item.is-selected,
+.choices__list[aria-expanded] .choices__item.is-selected {
+  color: var(--fg);
+  font-weight: 500;
+}
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+  background: var(--surface-2) !important;
+  color: var(--fg) !important;
+}
+
+/* ── Flatpickr ────────────────────────────────────────────────────────────── */
+.flatpickr-calendar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.1);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 4px;
+}
+.flatpickr-calendar.arrowTop::before,
+.flatpickr-calendar.arrowTop::after { display: none; }
+
+/* Header */
+.flatpickr-months { padding: 4px 0 2px; }
+.flatpickr-months .flatpickr-month { background: transparent; color: var(--fg); fill: var(--fg); height: 36px; }
+.flatpickr-current-month { font-size: 13px; font-weight: 600; color: var(--fg); padding-top: 7px; }
+.flatpickr-current-month .flatpickr-monthDropdown-months {
+  background: transparent;
+  color: var(--fg);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.flatpickr-current-month input.cur-year {
+  background: transparent;
+  color: var(--fg);
+  font-weight: 600;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+  fill: var(--dim);
+  color: var(--dim);
+  padding: 8px 10px;
+  transition: fill 0.15s;
+}
+.flatpickr-months .flatpickr-prev-month:hover,
+.flatpickr-months .flatpickr-next-month:hover { fill: var(--fg); }
+.flatpickr-months .flatpickr-prev-month svg,
+.flatpickr-months .flatpickr-next-month svg { fill: inherit; }
+
+/* Weekday headers */
+.flatpickr-weekdays { background: transparent; }
+span.flatpickr-weekday {
+  background: transparent;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Days */
+.dayContainer { padding: 2px; }
+.flatpickr-day {
+  color: var(--fg);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  height: 32px;
+  line-height: 30px;
+  max-width: 32px;
+  font-size: 13px;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.flatpickr-day:hover {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--fg);
+}
+.flatpickr-day.today {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.flatpickr-day.today:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected:focus {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.flatpickr-day.flatpickr-disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+  color: var(--dim);
+  opacity: 0.5;
+}
+.flatpickr-innerContainer { border: none; }
+.flatpickr-rContainer { padding: 0 4px 4px; }

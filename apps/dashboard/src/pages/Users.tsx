@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout/Layout'
 import { IconPlus } from '../components/ui/icons'
+import Select from '../components/ui/Select'
 import { api } from '../lib/api'
 import type { User } from '../types'
 
@@ -74,10 +75,15 @@ export default function Users() {
                   <input className={`${inputCls} mt-1`} type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required minLength={8} />
                 </label>
                 <label className="block text-sm text-muted">Role
-                  <select className={`${inputCls} mt-1`} value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value as 'admin' | 'viewer' }))}>
-                    <option value="viewer">Viewer — read-only</option>
-                    <option value="admin">Admin — full access</option>
-                  </select>
+                  <Select
+                    className={`${inputCls} mt-1`}
+                    value={form.role}
+                    onChange={(v) => setForm(f => ({ ...f, role: v as 'admin' | 'viewer' }))}
+                    options={[
+                      { value: 'viewer', label: 'Viewer — read-only' },
+                      { value: 'admin', label: 'Admin — full access' },
+                    ]}
+                  />
                 </label>
                 {error && <p className="text-sm text-crit">{error}</p>}
                 <div className="flex justify-end gap-2 pt-2">

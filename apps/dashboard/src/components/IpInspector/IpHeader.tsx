@@ -14,11 +14,6 @@ function countryFlag(code: string | null): string {
   )
 }
 
-function maskIp(ip: string): string {
-  const p = ip.split('.')
-  return p.length === 4 ? `${p[0]}.${p[1]}.x.x` : ip
-}
-
 function fmtDate(ts: string): string {
   return new Date(ts).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 }
@@ -31,7 +26,7 @@ export default function IpHeader({ profile }: Props) {
     <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
       <div className="min-w-0">
         <div className="flex items-baseline gap-3">
-          <span className="font-mono text-xl font-semibold">{maskIp(profile.ip)}</span>
+          <span className="font-mono text-xl font-semibold">{profile.ip}</span>
           <span className="text-sm text-muted">
             {countryFlag(profile.country)}&nbsp;{profile.country ?? 'Unknown'}
           </span>

@@ -2,7 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useServer } from '../../context/ServerContext'
 import { useTheme } from '../../context/ThemeContext'
-import { IconChevronDown, IconLogOut, IconMoon, IconServer, IconSun } from '../ui/icons'
+import { IconLogOut, IconMoon, IconServer, IconSun } from '../ui/icons'
+import Select from '../ui/Select'
 
 export default function TopBar() {
   const { logout } = useAuth()
@@ -18,22 +19,26 @@ export default function TopBar() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-surface/85 px-6 backdrop-blur">
       {servers.length > 0 && (
-        <div className="relative flex items-center">
-          <IconServer size={14} className="pointer-events-none absolute left-3 text-dim" />
-          <select
-            value={selectedServerId ?? ''}
-            onChange={e => setSelectedServerId(e.target.value === '' ? null : Number(e.target.value))}
-            className="h-9 appearance-none rounded-md border border-border bg-surface pl-8 pr-8 text-[13px] font-medium text-fg outline-none transition-colors hover:border-border-strong focus:border-accent"
-          >
-            <option value="">All sites</option>
-            {servers.map(s => (
-              <option key={s.id} value={s.id}>
-                {s.status === 'online' ? '● ' : '○ '}{s.name}
-              </option>
-            ))}
-          </select>
-          <IconChevronDown size={14} className="pointer-events-none absolute right-2.5 text-dim" />
-        </div>
+        <Select
+          value={String(selectedServerId ?? '')}
+          onChange={(v) => setSelectedServerId(v === '' ? null : Number(v))}
+          className="h-9 rounded-md border border-border bg-surface text-[13px] font-medium text-fg outline-none"
+          icon={<IconServer size={13} />}
+          allowHTML
+          options={[
+            { value: '', label: 'All sites' },
+            ...servers.map((s) => {
+              const dot = s.status === 'online'
+                ? '<span style="color:var(--ok)">●</span>'
+                : '<span style="color:var(--dim)">○</span>'
+              return {
+                value: String(s.id),
+                label: `● ${s.name}`,
+                customLabel: `${dot} ${s.name}`,
+              }
+            }),
+          ]}
+        />
       )}
 
       <div className="flex-1" />

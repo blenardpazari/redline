@@ -1,10 +1,5 @@
+import { useNavigate } from 'react-router-dom'
 import type { Alert } from '../../types'
-
-function maskIp(ip: string): string {
-  const parts = ip.split('.')
-  if (parts.length !== 4) return ip
-  return `${parts[0]}.${parts[1]}.x.x`
-}
 
 function formatTime(ts: string): string {
   return new Date(ts).toLocaleTimeString('en-US', {
@@ -20,6 +15,7 @@ interface Props {
 }
 
 export default function AlertItem({ alert }: Props) {
+  const navigate = useNavigate()
   const critical = alert.score >= 85
   return (
     <div
@@ -36,7 +32,7 @@ export default function AlertItem({ alert }: Props) {
         </span>
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-x-2 font-mono text-[11px] text-muted">
-        <span>{maskIp(alert.ip)}</span>
+        <span className="cursor-pointer underline-offset-2 hover:text-accent hover:underline" onClick={() => navigate(`/ip/${alert.ip}`)}>{alert.ip}</span>
         {alert.country !== null && <span>{alert.country}</span>}
         <span className="truncate">{alert.path}</span>
       </div>

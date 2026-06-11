@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout/Layout'
+import Checkbox from '../components/ui/Checkbox'
 import { api } from '../lib/api'
 import { useServer } from '../context/ServerContext'
 import { useTheme } from '../context/ThemeContext'
@@ -44,15 +45,11 @@ export default function AlertHistory() {
             <h1 className="text-xl font-semibold tracking-tight">Alert History</h1>
             <p className="text-sm text-muted">All triggered alerts with acknowledgement workflow</p>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
-            <input
-              type="checkbox"
-              checked={unackedOnly}
-              onChange={e => setUnackedOnly(e.target.checked)}
-              className="accent-(--accent)"
-            />
-            Unacknowledged only
-          </label>
+          <Checkbox
+            checked={unackedOnly}
+            onChange={setUnackedOnly}
+            label="Unacknowledged only"
+          />
         </div>
 
         {data && (

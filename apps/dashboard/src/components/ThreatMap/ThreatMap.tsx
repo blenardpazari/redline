@@ -30,7 +30,7 @@ export default function ThreatMap({ entries }: Props) {
   return (
     <MapContainer
       center={[20, 0]}
-      zoom={2}
+      zoom={3}
       minZoom={2}
       style={{ width: '100%', height: '100%', background: dark ? '#0a0f1e' : '#dce6ee' }}
       zoomControl
@@ -63,7 +63,7 @@ export default function ThreatMap({ entries }: Props) {
                 <span className="mb-1 block text-[11px] font-bold tracking-widest" style={{ color }}>
                   {entry.threat_level.toUpperCase()}
                 </span>
-                <div><span className="mr-2 inline-block w-14 text-dim">IP</span>{entry.ip}</div>
+                <div><span className="mr-2 inline-block w-14 text-dim">IP</span><span className="cursor-pointer underline-offset-2 hover:text-accent hover:underline" onClick={() => { window.location.href = `/ip/${entry.ip}` }}>{entry.ip}</span></div>
                 <div><span className="mr-2 inline-block w-14 text-dim">Country</span>{entry.country ?? '—'}</div>
                 <div><span className="mr-2 inline-block w-14 text-dim">Score</span>{entry.final_score != null ? entry.final_score.toFixed(1) : '—'}</div>
                 <div className="break-all"><span className="mr-2 inline-block w-14 text-dim">Path</span>{entry.path}</div>

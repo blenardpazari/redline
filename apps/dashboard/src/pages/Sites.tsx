@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout/Layout'
 import { IconCheck, IconCopy, IconPlus, IconServer } from '../components/ui/icons'
+import Select from '../components/ui/Select'
 import { api } from '../lib/api'
 import { useServer } from '../context/ServerContext'
 import type { Server, ServerEnv } from '../types'
@@ -125,9 +126,12 @@ export default function Sites() {
               </label>
               <label className="block text-sm text-muted">
                 Environment
-                <select className={`${inputCls} mt-1`} value={form.env} onChange={e => setForm(f => ({ ...f, env: e.target.value as ServerEnv }))}>
-                  {ENVS.map(e => <option key={e} value={e}>{e}</option>)}
-                </select>
+                <Select
+                  className={`${inputCls} mt-1`}
+                  value={form.env}
+                  onChange={(v) => setForm(f => ({ ...f, env: v as ServerEnv }))}
+                  options={ENVS.map(e => ({ value: e, label: e }))}
+                />
               </label>
               {error && <p className="text-sm text-crit">{error}</p>}
               <div className="flex justify-end gap-2 pt-2">

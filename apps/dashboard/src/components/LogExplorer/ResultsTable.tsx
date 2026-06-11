@@ -16,11 +16,6 @@ interface Props {
   onPage: (p: number) => void
 }
 
-function maskIp(ip: string) {
-  const p = ip.split('.')
-  return p.length === 4 ? `${p[0]}.${p[1]}.x.x` : ip
-}
-
 function fmtTime(ts: string) {
   return new Date(ts).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
@@ -63,7 +58,7 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
             className="cursor-pointer text-fg underline-offset-2 hover:text-accent hover:underline"
             onClick={() => navigate(`/ip/${e.ip}`)}
           >
-            {maskIp(e.ip)}
+            {e.ip}
           </span>
           <span className="text-muted">{e.method}</span>
           <span className="truncate text-muted">{e.path}</span>
