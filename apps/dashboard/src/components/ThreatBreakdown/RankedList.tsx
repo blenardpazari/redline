@@ -1,35 +1,36 @@
 import type { BreakdownItem } from '../../types'
-import styles from './RankedList.module.css'
-
-const TYPE_COLOR: Record<string, string> = {
-  NORMAL: '#22c55e',
-  BRUTE_FORCE: '#ef4444',
-  SQL_INJECTION: '#f97316',
-  SCANNER: '#eab308',
-  PATH_TRAVERSAL: '#8b5cf6',
-  BOT: '#64748b',
-}
-const FALLBACK = '#475569'
+import { useTheme } from '../../context/ThemeContext'
+import { chartTheme, threatTypeColor } from '../../lib/chartTheme'
 
 interface Props { items: BreakdownItem[] }
 
 export default function RankedList({ items }: Props) {
-  if (!items.length) return <div className={styles.empty}>No data</div>
+  const { theme } = useTheme()
+  const t = chartTheme(theme === 'dark')
+
+  if (!items.length) {
+    return (
+      <div className="flex min-h-64 flex-1 items-center justify-center rounded-lg border border-border bg-surface text-sm text-dim shadow-sm">
+        No data
+      </div>
+    )
+  }
+
   return (
-    <div className={styles.wrap}>
+    <div className="flex-1 space-y-4 rounded-lg border border-border bg-surface p-4 shadow-sm">
       {items.map((item, i) => (
-        <div key={item.threat_type} className={styles.row}>
-          <span className={styles.rank}>#{i + 1}</span>
-          <div className={styles.info}>
-            <div className={styles.top}>
-              <span className={styles.type}>{item.threat_type}</span>
-              <span className={styles.meta}>{item.count.toLocaleString()} events</span>
-              <span className={styles.pct}>{item.percent.toFixed(1)}%</span>
+        <div key={item.threat_type} className="flex items-start gap-3">
+          <span className="mt-0.5 w-7 shrink-0 font-mono text-xs text-dim">#{i + 1}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <span className="text-sm font-medium">{item.threat_type}</span>
+              <span className="text-xs text-muted">{item.count.toLocaleString()} events</span>
+              <span className="ml-auto font-mono text-xs text-muted">{item.percent.toFixed(1)}%</span>
             </div>
-            <div className={styles.barBg}>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
               <div
-                className={styles.bar}
-                style={{ width: `${item.percent}%`, background: TYPE_COLOR[item.threat_type] ?? FALLBACK }}
+                className="h-full rounded-full transition-all"
+                style={{ width: `${item.percent}%`, background: threatTypeColor(t, item.threat_type) }}
               />
             </div>
           </div>

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import FilterBar, { type Filters } from '../components/LogExplorer/FilterBar'
 import ResultsTable from '../components/LogExplorer/ResultsTable'
 import Layout from '../components/Layout/Layout'
+import { IconDownload } from '../components/ui/icons'
 import { useServer } from '../context/ServerContext'
 import { useDebounce } from '../hooks/useDebounce'
 import { api } from '../lib/api'
 import type { LogEntry, LogSearchResponse } from '../types'
-import styles from './LogExplorer.module.css'
 
 type SortField = 'timestamp' | 'threat_score' | 'status_code'
 type SortOrder = 'asc' | 'desc'
@@ -51,11 +51,19 @@ export default function LogExplorer() {
 
   return (
     <Layout>
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Log Explorer</h1>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Log Explorer</h1>
+            <p className="text-sm text-muted">Search, filter, and export request logs</p>
+          </div>
           {data && data.entries.length > 0 && (
-            <button className={styles.export} onClick={() => exportCsv(data.entries)}>Export CSV</button>
+            <button
+              className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-muted transition-colors hover:border-border-strong hover:text-fg"
+              onClick={() => exportCsv(data.entries)}
+            >
+              <IconDownload size={14} /> Export CSV
+            </button>
           )}
         </div>
         <FilterBar filters={filters} onChange={(f) => setFilters(f)} />

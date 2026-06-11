@@ -1,11 +1,10 @@
 import type { IpProfile } from '../../types'
-import styles from './IpHeader.module.css'
 
-function scoreLevel(score: number): { label: string; color: string } {
-  if (score >= 85) return { label: 'CRITICAL',   color: 'var(--critical)' }
-  if (score >= 70) return { label: 'WARNING',    color: 'var(--warning)' }
-  if (score >= 40) return { label: 'SUSPICIOUS', color: 'var(--suspicious)' }
-  return               { label: 'NORMAL',      color: 'var(--normal)' }
+function scoreLevel(score: number): { label: string; cls: string } {
+  if (score >= 85) return { label: 'CRITICAL',   cls: 'border-crit text-crit' }
+  if (score >= 70) return { label: 'WARNING',    cls: 'border-warn text-warn' }
+  if (score >= 40) return { label: 'SUSPICIOUS', cls: 'border-sus text-sus' }
+  return               { label: 'NORMAL',      cls: 'border-ok text-ok' }
 }
 
 function countryFlag(code: string | null): string {
@@ -29,17 +28,19 @@ interface Props { profile: IpProfile }
 export default function IpHeader({ profile }: Props) {
   const level = scoreLevel(profile.max_score)
   return (
-    <div className={styles.card}>
-      <div className={styles.left}>
-        <span className={styles.ip}>{maskIp(profile.ip)}</span>
-        <span className={styles.country}>
-          {countryFlag(profile.country)}&nbsp;{profile.country ?? 'Unknown'}
-        </span>
-        <span className={styles.dates}>
-          First&nbsp;{fmtDate(profile.first_seen)}&nbsp;·&nbsp;Last&nbsp;{fmtDate(profile.last_seen)}
-        </span>
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
+      <div className="min-w-0">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-xl font-semibold">{maskIp(profile.ip)}</span>
+          <span className="text-sm text-muted">
+            {countryFlag(profile.country)}&nbsp;{profile.country ?? 'Unknown'}
+          </span>
+        </div>
+        <div className="mt-1 text-xs text-dim">
+          First {fmtDate(profile.first_seen)} · Last {fmtDate(profile.last_seen)}
+        </div>
       </div>
-      <div className={styles.badge} style={{ borderColor: level.color, color: level.color }}>
+      <div className={`shrink-0 rounded-md border px-3 py-1.5 text-sm font-semibold ${level.cls}`}>
         Max {profile.max_score.toFixed(1)} — {level.label}
       </div>
     </div>

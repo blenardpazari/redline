@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react'
 import { api } from '../../lib/api'
 import type { Stats } from '../../types'
-import styles from './StatsBar.module.css'
 
 function Stat({
   label,
   value,
-  color = 'var(--text)',
+  valueClass = 'text-fg',
 }: {
   label: string
   value: number
-  color?: string
+  valueClass?: string
 }) {
   return (
-    <div className={styles.stat}>
-      <span className={styles.value} style={{ color }}>
+    <div className="flex-1 rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
+      <div className={`font-mono text-2xl font-semibold tabular-nums ${valueClass}`}>
         {value.toLocaleString()}
-      </span>
-      <span className={styles.label}>{label}</span>
+      </div>
+      <div className="mt-1 text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
     </div>
   )
 }
@@ -39,10 +38,10 @@ export default function StatsBar() {
   }, [])
 
   return (
-    <div className={styles.bar}>
+    <div className="flex gap-4">
       <Stat label="Requests Today" value={stats.requests_today} />
-      <Stat label="Anomalies" value={stats.anomalies_today} color="var(--suspicious)" />
-      <Stat label="Redlines Crossed" value={stats.redlines_today} color="var(--critical)" />
+      <Stat label="Anomalies" value={stats.anomalies_today} valueClass="text-sus" />
+      <Stat label="Redlines Crossed" value={stats.redlines_today} valueClass="text-crit" />
     </div>
   )
 }

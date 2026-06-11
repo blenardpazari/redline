@@ -1,50 +1,93 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-ok: var(--ok);
+  --color-sus: var(--sus);
+  --color-warn: var(--warn);
+  --color-crit: var(--crit);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
-  --bg:           #1a1a1a;
-  --surface:      #242424;
-  --surface-2:    #2e2e2e;
-  --border:       #3a3a3a;
-  --border-light: #444444;
-  --text:         #f0f0f0;
-  --text-muted:   #888888;
-  --text-dim:     #555555;
-  --accent:       #d84343;
-  --accent-hover: #c03535;
-  --normal:       #4caf80;
-  --suspicious:   #e0a43a;
-  --warning:      #e07a3a;
-  --critical:     #d84343;
-  --radius:       4px;
-  --radius-lg:    6px;
+  --bg:            #f4f5f7;
+  --surface:       #ffffff;
+  --surface-2:     #f8f9fb;
+  --border:        #e4e7ec;
+  --border-strong: #d0d6de;
+  --fg:            #2a2f36;
+  --muted:         #687586;
+  --dim:           #98a2b3;
+  --accent:        #d50c2d;
+  --accent-hover:  #b40a26;
+  --ok:            #16a34a;
+  --sus:           #ca8a04;
+  --warn:          #ea580c;
+  --crit:          #dc2626;
+  color-scheme: light;
+}
+
+.dark {
+  --bg:            #14171b;
+  --surface:       #1c2026;
+  --surface-2:     #242931;
+  --border:        #2c323b;
+  --border-strong: #3a424d;
+  --fg:            #e8ebef;
+  --muted:         #9aa4b2;
+  --dim:           #636e7b;
+  --accent:        #f0314b;
+  --accent-hover:  #ff4f66;
+  --ok:            #4ade80;
+  --sus:           #facc15;
+  --warn:          #fb923c;
+  --crit:          #f87171;
+  color-scheme: dark;
 }
 
 body {
   background:  var(--bg);
-  color:       var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color:       var(--fg);
+  font-family: var(--font-sans);
   font-size:   14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-a { color: inherit; text-decoration: none; }
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
-
-input, select, textarea {
-  font-family: inherit;
-  font-size: 14px;
-}
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #555; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dim); }
+
+/* Leaflet popup, themed to match the console */
+.leaflet-popup-content-wrapper {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.leaflet-popup-tip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.leaflet-popup-content { margin: 12px 14px; }
+.leaflet-container { font-family: var(--font-sans); }
+.dark .leaflet-control-zoom a {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.dark .leaflet-control-zoom a:hover { background: var(--surface-2); }

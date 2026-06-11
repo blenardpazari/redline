@@ -1,14 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import type { LogEntry, ThreatLevel } from '../../types'
-import styles from './ResultsTable.module.css'
-
-const ROW_BG: Record<ThreatLevel, string> = {
-  critical: 'rgba(239,68,68,0.08)', warning: 'rgba(249,115,22,0.06)',
-  suspicious: 'rgba(234,179,8,0.05)', normal: 'transparent',
-}
-const SCORE_COLOR: Record<ThreatLevel, string> = {
-  critical: '#ef4444', warning: '#f97316', suspicious: '#eab308', normal: '#22c55e',
-}
+import type { LogEntry } from '../../types'
+import { LEVEL_ROW_CLASS, LEVEL_TEXT_CLASS } from '../../lib/chartTheme'
 
 type SortField = 'timestamp' | 'threat_score' | 'status_code'
 type SortOrder = 'asc' | 'desc'
@@ -33,6 +25,8 @@ function fmtTime(ts: string) {
   return new Date(ts).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
+const GRID = 'grid grid-cols-[90px_120px_70px_1fr_70px_60px_100px] gap-2 px-4'
+
 export default function ResultsTable({ entries, total, page, limit, sort, order, onSort, onPage }: Props) {
   const navigate = useNavigate()
   const pages = Math.max(1, Math.ceil(total / limit))
@@ -42,37 +36,62 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
   function th(label: string, field: SortField) {
     const active = sort === field
     return (
-      <span className={`${styles.th} ${active ? styles.thActive : ''}`} onClick={() => onSort(field)}>
+      <span
+        className={`cursor-pointer select-none transition-colors hover:text-fg ${active ? 'text-accent' : ''}`}
+        onClick={() => onSort(field)}
+      >
         {label}{active ? (order === 'asc' ? ' ↑' : ' ↓') : ''}
       </span>
     )
   }
 
   return (
-    <div className={styles.wrap}>
-      <div className={styles.headerRow}>
-        {th('Time', 'timestamp')}<span className={styles.th}>IP</span>
-        <span className={styles.th}>Method</span><span className={styles.th}>Path</span>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
+      <div className={`${GRID} border-b border-border py-2.5 text-[11px] font-semibold uppercase tracking-wide text-dim`}>
+        {th('Time', 'timestamp')}<span>IP</span>
+        <span>Method</span><span>Path</span>
         {th('Status', 'status_code')}{th('Score', 'threat_score')}
-        <span className={styles.th}>Threat</span>
+        <span>Threat</span>
       </div>
+      {entries.length === 0 && (
+        <p className="px-4 py-8 text-center text-sm text-dim">No matching entries</p>
+      )}
       {entries.map((e) => (
-        <div key={e.id} className={styles.row} style={{ background: ROW_BG[e.threat_level] }}>
-          <span className={styles.muted}>{fmtTime(e.timestamp)}</span>
-          <span className={styles.ip} onClick={() => navigate(`/ip/${e.ip}`)}>{maskIp(e.ip)}</span>
-          <span className={styles.muted}>{e.method}</span>
-          <span className={styles.path}>{e.path}</span>
-          <span className={styles.muted}>{e.status_code}</span>
-          <span style={{ color: SCORE_COLOR[e.threat_level] }}>{e.threat_score.toFixed(1)}</span>
-          <span className={styles.muted}>{e.threat_level}</span>
+        <div key={e.id} className={`${GRID} border-b border-border/60 py-1.5 font-mono text-xs ${LEVEL_ROW_CLASS[e.threat_level]}`}>
+          <span className="text-dim">{fmtTime(e.timestamp)}</span>
+          <span
+            className="cursor-pointer text-fg underline-offset-2 hover:text-accent hover:underline"
+            onClick={() => navigate(`/ip/${e.ip}`)}
+          >
+            {maskIp(e.ip)}
+          </span>
+          <span className="text-muted">{e.method}</span>
+          <span className="truncate text-muted">{e.path}</span>
+          <span className="text-muted">{e.status_code}</span>
+          <span className={`font-medium ${LEVEL_TEXT_CLASS[e.threat_level]}`}>{e.threat_score.toFixed(1)}</span>
+          <span className="text-muted">{e.threat_level}</span>
         </div>
       ))}
-      <div className={styles.pagination}>
-        <span className={styles.count}>Showing {total === 0 ? 0 : from}–{to} of {total.toLocaleString()} entries</span>
-        <div className={styles.pages}>
-          <button className={styles.pageBtn} disabled={page <= 1} onClick={() => onPage(page - 1)}>← Prev</button>
-          <span className={styles.pageInfo}>Page {page} of {pages}</span>
-          <button className={styles.pageBtn} disabled={page >= pages} onClick={() => onPage(page + 1)}>Next →</button>
+      <div className="flex items-center justify-between px-4 py-3">
+        <span className="text-xs text-muted">
+          Showing {total === 0 ? 0 : from}–{to} of {total.toLocaleString()} entries
+        </span>
+        <div className="flex items-center gap-3">
+          <button
+            className="rounded-md border border-border px-2.5 py-1 text-xs text-muted transition-colors enabled:hover:border-border-strong enabled:hover:text-fg disabled:opacity-40"
+            disabled={page <= 1}
+            onClick={() => onPage(page - 1)}
+          >
+            ← Prev
+          </button>
+          <span className="text-xs text-muted">Page {page} of {pages}</span>
+          <button
+            className="rounded-md border border-border px-2.5 py-1 text-xs text-muted transition-colors enabled:hover:border-border-strong enabled:hover:text-fg disabled:opacity-40"
+            disabled={page >= pages}
+            onClick={() => onPage(page + 1)}
+          >
+            Next →
+          </button>
         </div>
       </div>
     </div>

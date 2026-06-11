@@ -1,5 +1,3 @@
-import styles from './BottomStats.module.css'
-
 interface Props {
   topPath: string | null | undefined
   topIp: string | null | undefined
@@ -13,16 +11,16 @@ function maskIp(ip: string): string {
 
 function Card({ label, value }: { label: string; value: string }) {
   return (
-    <div className={styles.card}>
-      <span className={styles.label}>{label}</span>
-      <span className={styles.value}>{value}</span>
+    <div className="flex-1 rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
+      <div className="text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
+      <div className="mt-1 truncate font-mono text-base font-medium">{value}</div>
     </div>
   )
 }
 
 export default function BottomStats({ topPath, topIp, busiestHour }: Props) {
   return (
-    <div className={styles.row}>
+    <div className="flex gap-4">
       <Card label="Most Targeted Path" value={topPath ?? '—'} />
       <Card label="Most Active Attacker" value={topIp ? maskIp(topIp) : '—'} />
       <Card

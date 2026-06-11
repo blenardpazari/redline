@@ -6,7 +6,6 @@ import Layout from '../components/Layout/Layout'
 import { useServer } from '../context/ServerContext'
 import { api } from '../lib/api'
 import type { ThreatBreakdownResponse } from '../types'
-import styles from './ThreatBreakdown.module.css'
 
 type Range = '24h' | '7d' | '30d'
 const RANGES: Range[] = ['24h', '7d', '30d']
@@ -27,22 +26,27 @@ export default function ThreatBreakdown() {
 
   return (
     <Layout>
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Threat Breakdown</h1>
-          <div className={styles.ranges}>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">Threat Breakdown</h1>
+            <p className="text-sm text-muted">Distribution of detected threat types</p>
+          </div>
+          <div className="flex rounded-md border border-border bg-surface p-0.5">
             {RANGES.map((r) => (
               <button
                 key={r}
                 onClick={() => setRange(r)}
-                className={`${styles.rangeBtn}${range === r ? ` ${styles.active}` : ''}`}
+                className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+                  range === r ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-fg'
+                }`}
               >
                 {r}
               </button>
             ))}
           </div>
         </div>
-        <div className={styles.main}>
+        <div className="flex gap-4">
           <BreakdownPie items={items} />
           <RankedList items={items} />
         </div>

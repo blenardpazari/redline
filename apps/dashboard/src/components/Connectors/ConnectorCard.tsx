@@ -1,16 +1,9 @@
 import type { Connector, ConnectorStatus } from '../../types'
-import styles from './ConnectorCard.module.css'
 
-const STATUS_LABEL: Record<ConnectorStatus, string> = {
-  active: 'ACTIVE',
-  inactive: 'INACTIVE',
-  unconfigured: 'UNCONFIGURED',
-}
-
-const STATUS_CLASS: Record<ConnectorStatus, string> = {
-  active: styles.statusActive,
-  inactive: styles.statusInactive,
-  unconfigured: styles.statusUnconfigured,
+const STATUS_BADGE: Record<ConnectorStatus, { label: string; cls: string }> = {
+  active:       { label: 'ACTIVE',       cls: 'bg-ok/10 text-ok' },
+  inactive:     { label: 'INACTIVE',     cls: 'bg-surface-2 text-dim' },
+  unconfigured: { label: 'UNCONFIGURED', cls: 'bg-sus/10 text-sus' },
 }
 
 function fmtTime(ts: string | null): string {
@@ -21,26 +14,27 @@ function fmtTime(ts: string | null): string {
 interface Props { connector: Connector }
 
 export default function ConnectorCard({ connector }: Props) {
+  const badge = STATUS_BADGE[connector.status]
   return (
-    <div className={styles.card}>
-      <div className={styles.top}>
-        <div className={styles.left}>
-          <span className={styles.name}>{connector.name}</span>
-          <span className={styles.sourceType}>{connector.source_type}</span>
+    <div className="flex flex-col rounded-lg border border-border bg-surface p-4 shadow-sm transition-colors hover:border-border-strong">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold">{connector.name}</div>
+          <div className="font-mono text-[11px] text-dim">{connector.source_type}</div>
         </div>
-        <span className={`${styles.status} ${STATUS_CLASS[connector.status]}`}>
-          {STATUS_LABEL[connector.status]}
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide ${badge.cls}`}>
+          {badge.label}
         </span>
       </div>
-      <p className={styles.desc}>{connector.description}</p>
-      <div className={styles.footer}>
-        <span className={styles.stat}>
-          <span className={styles.statLabel}>Events</span>
-          <span className={styles.statValue}>{connector.total_events.toLocaleString()}</span>
+      <p className="mt-2 flex-1 text-xs leading-relaxed text-muted">{connector.description}</p>
+      <div className="mt-3 flex gap-6 border-t border-border pt-3">
+        <span className="flex flex-col">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-dim">Events</span>
+          <span className="font-mono text-sm">{connector.total_events.toLocaleString()}</span>
         </span>
-        <span className={styles.stat}>
-          <span className={styles.statLabel}>Last event</span>
-          <span className={styles.statValue}>{fmtTime(connector.last_event)}</span>
+        <span className="flex flex-col">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-dim">Last event</span>
+          <span className="font-mono text-sm">{fmtTime(connector.last_event)}</span>
         </span>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { isAuthenticated } from './lib/token'
 import { ServerProvider } from './context/ServerContext'
+import { ThemeProvider } from './context/ThemeContext'
 import AlertHistory from './pages/AlertHistory'
 import AlertSettings from './pages/AlertSettings'
 import Analytics from './pages/Analytics'
@@ -27,26 +28,28 @@ function Protected({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <ServerProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/"          element={<Protected><Dashboard /></Protected>} />
-          <Route path="/map"       element={<Protected><ThreatMap /></Protected>} />
-          <Route path="/insights"  element={<Protected><Insights /></Protected>} />
-          <Route path="/analytics" element={<Protected><Analytics /></Protected>} />
-          <Route path="/ip/:ip"    element={<Protected><IpInspector /></Protected>} />
-          <Route path="/logs"      element={<Protected><LogExplorer /></Protected>} />
-          <Route path="/breakdown" element={<Protected><ThreatBreakdown /></Protected>} />
-          <Route path="/connectors" element={<Protected><Connectors /></Protected>} />
-          <Route path="/settings"  element={<Protected><AlertSettings /></Protected>} />
-          <Route path="/sites"     element={<Protected><Sites /></Protected>} />
-          <Route path="/alerts"    element={<Protected><AlertHistory /></Protected>} />
-          <Route path="/users"     element={<Protected><Users /></Protected>} />
-          <Route path="/health"    element={<Protected><Health /></Protected>} />
-          <Route path="*"          element={<Navigate to="/" replace />} />
-        </Routes>
-      </ServerProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <ServerProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/"          element={<Protected><Dashboard /></Protected>} />
+            <Route path="/map"       element={<Protected><ThreatMap /></Protected>} />
+            <Route path="/insights"  element={<Protected><Insights /></Protected>} />
+            <Route path="/analytics" element={<Protected><Analytics /></Protected>} />
+            <Route path="/ip/:ip"    element={<Protected><IpInspector /></Protected>} />
+            <Route path="/logs"      element={<Protected><LogExplorer /></Protected>} />
+            <Route path="/breakdown" element={<Protected><ThreatBreakdown /></Protected>} />
+            <Route path="/connectors" element={<Protected><Connectors /></Protected>} />
+            <Route path="/settings"  element={<Protected><AlertSettings /></Protected>} />
+            <Route path="/sites"     element={<Protected><Sites /></Protected>} />
+            <Route path="/alerts"    element={<Protected><AlertHistory /></Protected>} />
+            <Route path="/users"     element={<Protected><Users /></Protected>} />
+            <Route path="/health"    element={<Protected><Health /></Protected>} />
+            <Route path="*"          element={<Navigate to="/" replace />} />
+          </Routes>
+        </ServerProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }

@@ -8,8 +8,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useWebSocket } from '../hooks/useWebSocket'
 import { useServer } from '../context/ServerContext'
 import { api } from '../lib/api'
+import { scoreTextClass } from '../lib/chartTheme'
 import type { Alert, ChartDataPoint, LogEntry, WebSocketMessage, Server } from '../types'
-import styles from './Dashboard.module.css'
 
 const MAX_ENTRIES = 200
 
@@ -30,6 +30,12 @@ function buildChartPoint(entry: LogEntry, prev: ChartDataPoint[]): ChartDataPoin
 }
 
 interface TopAttacker { ip: string; country: string | null; count: number; max_score: number; threat_type: string | null }
+
+const STATUS_DOT: Record<string, string> = {
+  online: 'bg-ok',
+  offline: 'bg-dim',
+  unconfigured: 'bg-sus',
+}
 
 export default function Dashboard() {
   const { token } = useAuth()
@@ -76,41 +82,40 @@ export default function Dashboard() {
   useWebSocket(handleMessage, token)
 
   function statusDot(s: Server) {
-    const colors: Record<string, string> = { online: '#4ade80', offline: '#475569', unconfigured: '#f59e0b' }
-    return <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: colors[s.status] ?? '#475569', marginRight: 6 }} />
-  }
-
-  function scoreColor(score: number) {
-    if (score >= 85) return '#ef4444'
-    if (score >= 70) return '#f97316'
-    return '#eab308'
+    return <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${STATUS_DOT[s.status] ?? 'bg-dim'}`} />
   }
 
   return (
     <Layout>
-      <div className={styles.page}>
-        <div className={styles.statsRow}><StatsBar /></div>
-        <div className={styles.main}>
+      <div className="space-y-4">
+        <div className="mb-1">
+          <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
+          <p className="text-sm text-muted">Real-time traffic and threat monitoring</p>
+        </div>
+
+        <StatsBar />
+
+        <div className="flex gap-4">
           <LiveFeed entries={entries} />
           <AlertPanel alerts={alerts} />
         </div>
 
         {(servers.length > 0 || topAttackers.length > 0) && (
-          <div className={styles.widgetRow}>
+          <div className="flex gap-4">
             {servers.length > 0 && (
-              <div className={styles.widget}>
-                <h3 className={styles.widgetTitle}>Sites</h3>
-                <div className={styles.serverList}>
+              <div className="flex-1 rounded-lg border border-border bg-surface shadow-sm">
+                <h3 className="border-b border-border px-4 py-3 text-sm font-medium">Sites</h3>
+                <div className="divide-y divide-border/60">
                   {servers.map(s => (
-                    <div key={s.id} className={styles.serverRow}>
-                      <div className={styles.serverLeft}>
+                    <div key={s.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+                      <div className="flex items-center">
                         {statusDot(s)}
-                        <span className={styles.serverName}>{s.name}</span>
-                        <span className={styles.serverEnv}>{s.env}</span>
+                        <span className="font-medium">{s.name}</span>
+                        <span className="ml-2 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{s.env}</span>
                       </div>
-                      <div className={styles.serverRight}>
-                        <span className={styles.serverEvents}>{(s.total_events ?? 0).toLocaleString()} events</span>
-                        <span className={styles.serverSeen}>{s.last_seen ? new Date(s.last_seen).toLocaleTimeString() : 'never'}</span>
+                      <div className="flex items-center gap-4 text-xs text-muted">
+                        <span className="font-mono">{(s.total_events ?? 0).toLocaleString()} events</span>
+                        <span className="font-mono text-dim">{s.last_seen ? new Date(s.last_seen).toLocaleTimeString() : 'never'}</span>
                       </div>
                     </div>
                   ))}
@@ -119,17 +124,19 @@ export default function Dashboard() {
             )}
 
             {topAttackers.length > 0 && (
-              <div className={styles.widget}>
-                <h3 className={styles.widgetTitle}>Top Attackers <span className={styles.widgetSub}>(current session)</span></h3>
-                <div className={styles.attackerList}>
+              <div className="flex-1 rounded-lg border border-border bg-surface shadow-sm">
+                <h3 className="border-b border-border px-4 py-3 text-sm font-medium">
+                  Top Attackers <span className="font-normal text-dim">(current session)</span>
+                </h3>
+                <div className="divide-y divide-border/60">
                   {topAttackers.map((a, i) => (
-                    <div key={a.ip} className={styles.attackerRow}>
-                      <span className={styles.rank}>#{i + 1}</span>
-                      <div className={styles.attackerInfo}>
-                        <span className={styles.attackerIp}>{a.ip}</span>
-                        <span className={styles.attackerMeta}>{a.country} · {a.threat_type} · {a.count} hits</span>
+                    <div key={a.ip} className="flex items-center gap-3 px-4 py-2.5">
+                      <span className="w-6 font-mono text-xs text-dim">#{i + 1}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-mono text-sm">{a.ip}</div>
+                        <div className="truncate text-xs text-muted">{a.country} · {a.threat_type} · {a.count} hits</div>
                       </div>
-                      <span className={styles.attackerScore} style={{ color: scoreColor(a.max_score) }}>
+                      <span className={`font-mono text-sm font-semibold ${scoreTextClass(a.max_score)}`}>
                         {a.max_score.toFixed(0)}
                       </span>
                     </div>
@@ -140,7 +147,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className={styles.chartRow}><ThreatChart data={chartData} /></div>
+        <ThreatChart data={chartData} />
       </div>
     </Layout>
   )

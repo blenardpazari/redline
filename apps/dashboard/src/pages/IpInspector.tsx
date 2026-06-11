@@ -5,9 +5,9 @@ import IpStats from '../components/IpInspector/IpStats'
 import RequestsTable from '../components/IpInspector/RequestsTable'
 import ScoreTimeline from '../components/IpInspector/ScoreTimeline'
 import Layout from '../components/Layout/Layout'
+import { IconArrowLeft } from '../components/ui/icons'
 import { api } from '../lib/api'
 import type { IpProfile } from '../types'
-import styles from './IpInspector.module.css'
 
 export default function IpInspector() {
   const { ip } = useParams<{ ip: string }>()
@@ -25,22 +25,32 @@ export default function IpInspector() {
   if (notFound) {
     return (
       <Layout>
-        <div className={styles.empty}>
-          No data for {ip}.&nbsp;
-          <button className={styles.back} onClick={() => navigate(-1)}>Go back</button>
+        <div className="flex flex-col items-center justify-center py-24 text-sm text-muted">
+          No data for {ip}.
+          <button
+            className="mt-3 flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-muted transition-colors hover:border-border-strong hover:text-fg"
+            onClick={() => navigate(-1)}
+          >
+            <IconArrowLeft size={14} /> Go back
+          </button>
         </div>
       </Layout>
     )
   }
 
   if (!profile) {
-    return <Layout><div className={styles.empty}>Loading…</div></Layout>
+    return <Layout><div className="py-24 text-center text-sm text-dim">Loading…</div></Layout>
   }
 
   return (
     <Layout>
-      <div className={styles.page}>
-        <button className={styles.back} onClick={() => navigate(-1)}>← Back</button>
+      <div className="space-y-4">
+        <button
+          className="flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-fg"
+          onClick={() => navigate(-1)}
+        >
+          <IconArrowLeft size={14} /> Back
+        </button>
         <IpHeader profile={profile} />
         <IpStats profile={profile} />
         <ScoreTimeline requests={profile.requests} />

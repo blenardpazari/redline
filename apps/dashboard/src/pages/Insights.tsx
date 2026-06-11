@@ -1,6 +1,7 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import Layout from '../components/Layout/Layout'
-import styles from './Insights.module.css'
+import { useTheme } from '../context/ThemeContext'
+import { chartTheme } from '../lib/chartTheme'
 
 const MODEL_COMPARISON = [
   { name: 'Isolation Forest', accuracy: 94.2 },
@@ -20,21 +21,20 @@ const CM_DATA = [
 
 const CM_MAX = Math.max(...CM_DATA.flat())
 
-const TICK = { fill: '#64748b', fontSize: 11, fontFamily: 'JetBrains Mono, monospace' }
-const TOOLTIP_STYLE = { background: '#111827', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 0, fontSize: 12 }
-
 function ConfusionMatrix() {
   return (
-    <div className={styles.matrix}>
-      <div className={styles.matrixGrid}>
+    <div className="flex flex-1 items-center justify-center p-4">
+      <div className="grid grid-cols-7 gap-1">
         <div />
-        {CM_LABELS.map((l) => <div key={l} className={styles.matrixLabel}>{l}</div>)}
+        {CM_LABELS.map((l) => (
+          <div key={l} className="flex items-center justify-center p-1 font-mono text-[10px] text-dim">{l}</div>
+        ))}
         {CM_DATA.map((row, i) => ([
-          <div key={`l${i}`} className={styles.matrixLabel}>{CM_LABELS[i]}</div>,
+          <div key={`l${i}`} className="flex items-center justify-center p-1 font-mono text-[10px] text-dim">{CM_LABELS[i]}</div>,
           ...row.map((val, j) => (
             <div
               key={`${i}${j}`}
-              className={styles.matrixCell}
+              className="flex h-10 w-12 items-center justify-center rounded font-mono text-xs"
               style={{
                 background: i === j
                   ? `rgba(34,197,94,${val / CM_MAX})`
@@ -50,39 +50,50 @@ function ConfusionMatrix() {
   )
 }
 
+function StatCard({ value, label, sub }: { value: string; label: string; sub: string }) {
+  return (
+    <div className="flex-1 rounded-lg border border-border bg-surface px-5 py-4 shadow-sm">
+      <div className="font-mono text-2xl font-semibold text-ok">{value}</div>
+      <div className="mt-1 text-sm font-medium">{label}</div>
+      <div className="text-xs text-dim">{sub}</div>
+    </div>
+  )
+}
+
 export default function Insights() {
+  const { theme } = useTheme()
+  const t = chartTheme(theme === 'dark')
+
   return (
     <Layout>
-      <div className={styles.content}>
-        <div className={styles.statsRow}>
-          <div className={styles.stat}>
-            <div className={styles.statValue}>94.2%</div>
-            <div className={styles.statLabel}>Anomaly Detector</div>
-            <div className={styles.statSub}>Isolation Forest · 5-fold CV</div>
-          </div>
-          <div className={styles.stat}>
-            <div className={styles.statValue}>97.1%</div>
-            <div className={styles.statLabel}>Threat Classifier</div>
-            <div className={styles.statSub}>TF-IDF + LogReg · 5-fold CV</div>
-          </div>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">ML Insights</h1>
+          <p className="text-sm text-muted">Model performance and evaluation metrics</p>
         </div>
-        <div className={styles.row}>
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>Anomaly Model Comparison</div>
-            <div className={styles.chartWrap}>
+
+        <div className="flex gap-4">
+          <StatCard value="94.2%" label="Anomaly Detector" sub="Isolation Forest · 5-fold CV" />
+          <StatCard value="97.1%" label="Threat Classifier" sub="TF-IDF + LogReg · 5-fold CV" />
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex flex-1 flex-col rounded-lg border border-border bg-surface shadow-sm">
+            <div className="border-b border-border px-4 py-3 text-sm font-medium">Anomaly Model Comparison</div>
+            <div className="h-72 p-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={MODEL_COMPARISON} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="name" tick={TICK} axisLine={false} tickLine={false} />
-                  <YAxis domain={[80, 100]} tick={TICK} axisLine={false} tickLine={false} width={32} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="accuracy" fill="#22c55e" radius={0} name="Accuracy %" />
+                  <CartesianGrid stroke={t.grid} vertical={false} />
+                  <XAxis dataKey="name" tick={t.tick} axisLine={false} tickLine={false} />
+                  <YAxis domain={[80, 100]} tick={t.tick} axisLine={false} tickLine={false} width={32} />
+                  <Tooltip contentStyle={t.tooltip} labelStyle={t.tooltipLabel} cursor={{ fill: t.grid }} />
+                  <Bar dataKey="accuracy" fill={t.ok} radius={[3, 3, 0, 0]} name="Accuracy %" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
-          <div className={styles.card}>
-            <div className={styles.cardHeader}>Classifier Confusion Matrix</div>
+          <div className="flex flex-1 flex-col rounded-lg border border-border bg-surface shadow-sm">
+            <div className="border-b border-border px-4 py-3 text-sm font-medium">Classifier Confusion Matrix</div>
             <ConfusionMatrix />
           </div>
         </div>

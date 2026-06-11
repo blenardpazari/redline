@@ -1,4 +1,4 @@
-import styles from './FilterBar.module.css'
+import { IconSearch } from '../ui/icons'
 
 export interface Filters {
   q: string
@@ -13,8 +13,11 @@ interface Props {
   onChange: (f: Filters) => void
 }
 
-const LEVELS = ['', 'normal', 'suspicious', 'warning', 'critical']
-const STATUSES = ['', '2xx', '3xx', '4xx', '5xx']
+const LEVELS = ['normal', 'suspicious', 'warning', 'critical']
+const STATUSES = ['2xx', '3xx', '4xx', '5xx']
+
+const inputCls =
+  'h-9 rounded-md border border-border bg-surface px-3 text-[13px] text-fg outline-none transition-colors placeholder:text-dim hover:border-border-strong focus:border-accent'
 
 export default function FilterBar({ filters, onChange }: Props) {
   function set(key: keyof Filters, value: string) {
@@ -26,25 +29,33 @@ export default function FilterBar({ filters, onChange }: Props) {
   }
 
   return (
-    <div className={styles.bar}>
-      <input
-        className={styles.search}
-        placeholder="Search IP or path…"
-        value={filters.q}
-        onChange={(e) => set('q', e.target.value)}
-      />
-      <select className={styles.select} value={filters.threatLevel} onChange={(e) => set('threatLevel', e.target.value)}>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="relative flex min-w-56 flex-1 items-center">
+        <IconSearch size={14} className="pointer-events-none absolute left-3 text-dim" />
+        <input
+          className={`${inputCls} w-full pl-8`}
+          placeholder="Search IP or path…"
+          value={filters.q}
+          onChange={(e) => set('q', e.target.value)}
+        />
+      </div>
+      <select className={inputCls} value={filters.threatLevel} onChange={(e) => set('threatLevel', e.target.value)}>
         <option value="">All levels</option>
-        {LEVELS.slice(1).map((l) => <option key={l} value={l}>{l}</option>)}
+        {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
       </select>
-      <select className={styles.select} value={filters.status} onChange={(e) => set('status', e.target.value)}>
+      <select className={inputCls} value={filters.status} onChange={(e) => set('status', e.target.value)}>
         <option value="">All status</option>
-        {STATUSES.slice(1).map((s) => <option key={s} value={s}>{s}</option>)}
+        {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
       </select>
-      <input className={styles.date} type="date" value={filters.from} onChange={(e) => set('from', e.target.value)} />
-      <span className={styles.sep}>→</span>
-      <input className={styles.date} type="date" value={filters.to} onChange={(e) => set('to', e.target.value)} />
-      <button className={styles.clear} onClick={clear}>Clear</button>
+      <input className={inputCls} type="date" value={filters.from} onChange={(e) => set('from', e.target.value)} />
+      <span className="text-dim">→</span>
+      <input className={inputCls} type="date" value={filters.to} onChange={(e) => set('to', e.target.value)} />
+      <button
+        className="h-9 rounded-md border border-border bg-surface px-3 text-[13px] text-muted transition-colors hover:border-border-strong hover:text-fg"
+        onClick={clear}
+      >
+        Clear
+      </button>
     </div>
   )
 }

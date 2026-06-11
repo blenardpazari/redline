@@ -2,7 +2,6 @@ import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import styles from './Login.module.css'
 
 export default function Login() {
   const { login } = useAuth()
@@ -28,18 +27,23 @@ export default function Login() {
     }
   }
 
+  const inputCls =
+    'w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-sm text-fg outline-none transition-colors placeholder:text-dim hover:border-border-strong focus:border-accent'
+
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <div className={styles.logoMark}>RL</div>
-        <h1 className={styles.title}>Redline</h1>
-        <p className={styles.subtitle}>Sign in to continue</p>
-        <form onSubmit={handleSubmit} className={styles.form}>
+    <div className="flex min-h-screen items-center justify-center bg-bg px-4 text-fg">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-lg">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-lg font-bold text-white shadow-md">
+          RL
+        </div>
+        <h1 className="text-center text-xl font-semibold tracking-tight">Redline</h1>
+        <p className="mb-6 mt-1 text-center text-sm text-muted">Sign in to continue</p>
+        <form onSubmit={handleSubmit} className="space-y-3">
           <input
             name="username"
             type="text"
             placeholder="Username"
-            className={styles.input}
+            className={inputCls}
             autoComplete="username"
             required
           />
@@ -47,12 +51,16 @@ export default function Login() {
             name="password"
             type="password"
             placeholder="Password"
-            className={styles.input}
+            className={inputCls}
             autoComplete="current-password"
             required
           />
-          {error !== null && <p className={styles.error}>{error}</p>}
-          <button type="submit" className={styles.button} disabled={loading}>
+          {error !== null && <p className="text-sm text-crit">{error}</p>}
+          <button
+            type="submit"
+            className="w-full rounded-md bg-accent py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+            disabled={loading}
+          >
             {loading ? 'Authenticating…' : 'Sign in'}
           </button>
         </form>
