@@ -95,13 +95,13 @@ export default function Dashboard() {
 
         <StatsBar />
 
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
           <LiveFeed entries={entries} />
           <AlertPanel alerts={alerts} />
         </div>
 
         {(servers.length > 0 || topAttackers.length > 0) && (
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 lg:flex-row">
             {servers.length > 0 && (
               <div className="flex-1 rounded-lg border border-border bg-surface shadow-sm">
                 <h3 className="border-b border-border px-4 py-3 text-sm font-medium">Sites</h3>

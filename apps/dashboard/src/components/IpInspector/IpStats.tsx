@@ -17,7 +17,7 @@ interface Props { profile: IpProfile }
 
 export default function IpStats({ profile }: Props) {
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
       <StatCard label="Total Requests" value={profile.total_requests.toLocaleString()} />
       <StatCard label="Avg Score"      value={profile.avg_score.toFixed(1)} />
       <StatCard label="Threat Types"   value={profile.threat_types.length.toString()} />

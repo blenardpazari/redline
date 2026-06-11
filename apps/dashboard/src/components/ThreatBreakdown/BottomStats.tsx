@@ -18,7 +18,7 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
 export default function BottomStats({ topPath, topIp, busiestHour }: Props) {
   const navigate = useNavigate()
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
       <Card label="Most Targeted Path">{topPath ?? '—'}</Card>
       <Card label="Most Active Attacker">
         {topIp

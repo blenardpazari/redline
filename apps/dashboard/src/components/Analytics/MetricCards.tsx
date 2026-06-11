@@ -16,7 +16,7 @@ function Card({ label, value, sub }: { label: string; value: string; sub: string
 
 export default function MetricCards({ total, anomalyRate, peak }: Props) {
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
       <Card label="Total Requests" value={total.toLocaleString()} sub="in selected range" />
       <Card label="Anomaly Rate" value={`${anomalyRate.toFixed(1)}%`} sub="suspicious + warning + critical" />
       <Card label="Peak / Minute" value={peak.toString()} sub="highest spike in range" />

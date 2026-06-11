@@ -6,7 +6,10 @@ import { api } from '../lib/api'
 import { useServer } from '../context/ServerContext'
 import type { Server, ServerEnv } from '../types'
 
-const ENVS: ServerEnv[] = ['production', 'staging', 'dev']
+const ENVS: { value: ServerEnv; label: string }[] = [
+  { value: 'production', label: 'Production' },
+  { value: 'staging',    label: 'Staging' },
+]
 
 const inputCls =
   'w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors placeholder:text-dim hover:border-border-strong focus:border-accent'
@@ -109,12 +112,12 @@ export default function Sites() {
   return (
     <Layout>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+        <div>
+          <div className="flex items-center justify-between gap-3">
             <h1 className="text-xl font-semibold tracking-tight">Sites</h1>
-            <p className="text-sm text-muted">Add a server, copy the API key, run the agent — logs start appearing in real time.</p>
+            <div className="shrink-0">{addBtn}</div>
           </div>
-          {addBtn}
+          <p className="mt-1 text-sm text-muted">Add a server, copy the API key, run the agent — logs start appearing in real time.</p>
         </div>
 
         {adding && (
@@ -129,8 +132,8 @@ export default function Sites() {
                 <Select
                   className={`${inputCls} mt-1`}
                   value={form.env}
-                  onChange={(v) => setForm(f => ({ ...f, env: v as ServerEnv }))}
-                  options={ENVS.map(e => ({ value: e, label: e }))}
+                  onChange={v => setForm(f => ({ ...f, env: v as ServerEnv }))}
+                  options={ENVS}
                 />
               </label>
               {error && <p className="text-sm text-crit">{error}</p>}
@@ -173,9 +176,10 @@ export default function Sites() {
           <div className="space-y-3">
             {servers.map(server => (
               <div key={server.id} className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
-                <div className="flex flex-wrap items-center gap-4 px-5 py-4">
-                  <div className="flex min-w-48 items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-muted">
+                <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
+                  {/* Name + icon */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-muted">
                       <IconServer size={18} />
                     </div>
                     <div>
@@ -184,7 +188,8 @@ export default function Sites() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  {/* Status badges */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_BADGE[server.status] ?? STATUS_BADGE.unconfigured}`}>
                       {server.status}
                     </span>
@@ -194,24 +199,25 @@ export default function Sites() {
                     </span>
                   </div>
 
-                  <div className="ml-auto flex flex-col items-end gap-2">
+                  {/* API key + actions */}
+                  <div className="flex flex-col gap-2 sm:ml-auto sm:items-end">
                     <div className="flex items-center gap-2">
                       <code className="rounded bg-surface-2 px-2 py-1 font-mono text-[11px] text-muted">{server.api_key.slice(0, 14)}…</code>
                       <button
-                        className="flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:border-border-strong hover:text-fg"
+                        className="flex cursor-pointer items-center gap-1 rounded border border-border px-2 py-1 text-[11px] text-muted transition-colors hover:border-border-strong hover:text-fg"
                         onClick={() => copy(server.api_key, `key-${server.id}`)}
                       >
                         {copied === `key-${server.id}` ? <><IconCheck size={11} /> Copied</> : <><IconCopy size={11} /> Copy Key</>}
                       </button>
                     </div>
                     <div className="flex items-center gap-2 text-[12px]">
-                      <button className="text-muted transition-colors hover:text-fg" onClick={() => setExpanded(expanded === server.id ? null : server.id)}>
+                      <button className="cursor-pointer text-muted transition-colors hover:text-fg" onClick={() => setExpanded(expanded === server.id ? null : server.id)}>
                         {expanded === server.id ? 'Hide setup' : 'Setup guide'}
                       </button>
                       <span className="text-border-strong">·</span>
-                      <button className="text-muted transition-colors hover:text-fg" onClick={() => handleRotate(server.id)}>Rotate</button>
+                      <button className="cursor-pointer text-muted transition-colors hover:text-fg" onClick={() => handleRotate(server.id)}>Rotate</button>
                       <span className="text-border-strong">·</span>
-                      <button className="text-crit/80 transition-colors hover:text-crit" onClick={() => handleDelete(server.id)}>Remove</button>
+                      <button className="cursor-pointer text-crit/80 transition-colors hover:text-crit" onClick={() => handleDelete(server.id)}>Remove</button>
                     </div>
                   </div>
                 </div>

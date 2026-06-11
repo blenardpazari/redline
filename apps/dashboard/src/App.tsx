@@ -7,6 +7,7 @@ import AlertSettings from './pages/AlertSettings'
 import Analytics from './pages/Analytics'
 import Dashboard from './pages/Dashboard'
 import Health from './pages/Health'
+import Clustering from './pages/Clustering'
 import Insights from './pages/Insights'
 import IpInspector from './pages/IpInspector'
 import LogExplorer from './pages/LogExplorer'
@@ -34,7 +35,8 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/"          element={<Protected><Dashboard /></Protected>} />
             <Route path="/map"       element={<Protected><ThreatMap /></Protected>} />
-            <Route path="/insights"  element={<Protected><Insights /></Protected>} />
+            <Route path="/insights"   element={<Protected><Insights /></Protected>} />
+            <Route path="/clustering" element={<Protected><Clustering /></Protected>} />
             <Route path="/analytics" element={<Protected><Analytics /></Protected>} />
             <Route path="/ip/:ip"    element={<Protected><IpInspector /></Protected>} />
             <Route path="/logs"      element={<Protected><LogExplorer /></Protected>} />

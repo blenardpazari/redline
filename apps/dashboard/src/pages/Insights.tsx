@@ -22,6 +22,7 @@ interface ModelMetrics {
   per_class?: Record<string, { precision: number; recall: number; f1: number; support: number }>
   cv_f1_mean?: number
   best_params?: Record<string, unknown>
+  feature_importances?: number[]
 }
 
 interface InsightsData {
@@ -149,6 +150,27 @@ function DatasetBar({ classCounts }: { classCounts: Record<string, number> }) {
   )
 }
 
+const RF_FEATURE_NAMES = ['Hour of Day', 'Path Length', 'Status Code', 'Response Time', 'Attack Path']
+
+function FeatureImportanceChart({ importances }: { importances: number[] }) {
+  const { theme } = useTheme()
+  const t = chartTheme(theme === 'dark')
+  const data = importances
+    .map((v, i) => ({ name: RF_FEATURE_NAMES[i] ?? `f${i}`, value: Math.round(v * 1000) / 10 }))
+    .sort((a, b) => b.value - a.value)
+  return (
+    <ResponsiveContainer width="100%" height={180}>
+      <BarChart data={data} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 80 }}>
+        <CartesianGrid stroke={t.grid} horizontal={false} />
+        <XAxis type="number" tick={t.tick} axisLine={false} tickLine={false} unit="%" domain={[0, 'dataMax']} />
+        <YAxis type="category" dataKey="name" tick={{ ...t.tick, fontSize: 11 }} axisLine={false} tickLine={false} width={76} />
+        <Tooltip contentStyle={t.tooltip} formatter={(v: number) => [`${v}%`, 'Importance']} />
+        <Bar dataKey="value" fill={t.warn} radius={[0, 4, 4, 0]} maxBarSize={18} />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
+
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border bg-surface shadow-sm">
@@ -172,12 +194,43 @@ export default function Insights() {
   const [data, setData] = useState<InsightsData | null>(null)
   const [error, setError] = useState('')
   const [tab, setTab] = useState<'classifier' | 'anomaly'>('classifier')
+  const [retraining, setRetraining] = useState(false)
+  const [retrainMsg, setRetrainMsg] = useState('')
 
-  useEffect(() => {
+  const loadData = () => {
     api.get<InsightsData>('/insights')
-      .then(setData)
+      .then(d => { setData(d); setError('') })
       .catch(() => setError('evaluation.json not found — run train.py first'))
-  }, [])
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  async function handleRetrain() {
+    setRetraining(true)
+    setRetrainMsg('Training started...')
+    try {
+      await api.post('/insights/retrain', {})
+      // poll until done
+      const poll = setInterval(async () => {
+        try {
+          const s = await api.get<{ running: boolean; last_exit: number | null }>('/insights/retrain/status')
+          if (!s.running) {
+            clearInterval(poll)
+            setRetraining(false)
+            if (s.last_exit === 0) {
+              setRetrainMsg('Retrain complete ✓')
+              loadData()
+            } else {
+              setRetrainMsg(`Retrain failed (exit ${s.last_exit})`)
+            }
+          }
+        } catch { clearInterval(poll); setRetraining(false) }
+      }, 2000)
+    } catch {
+      setRetraining(false)
+      setRetrainMsg('Failed to start retrain')
+    }
+  }
 
   if (error) return (
     <Layout>
@@ -201,11 +254,13 @@ export default function Insights() {
   const activeModels = tab === 'classifier' ? data.classifier.models : data.anomaly.models
   const winner = tab === 'classifier' ? data.classifier.winner : data.anomaly.winner
   const bestModel = activeModels.find(m => m.name === winner) ?? activeModels[0]
+  const rfModel = data.classifier.models.find(m => m.feature_importances)
 
   return (
     <Layout>
       <div className="space-y-4">
-        <div className="flex items-start justify-between">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">ML Insights</h1>
             <p className="text-sm text-muted">
@@ -213,23 +268,48 @@ export default function Insights() {
               <span className="font-mono text-xs text-dim">{new Date(data.trained_at).toLocaleString()}</span>
             </p>
           </div>
-          <div className="flex rounded-lg border border-border bg-surface-2 p-0.5">
-            {(['classifier', 'anomaly'] as const).map(t => (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {retrainMsg && (
+                <span className={`text-xs ${retrainMsg.includes('✓') ? 'text-ok' : retrainMsg.includes('fail') || retrainMsg.includes('Failed') ? 'text-crit' : 'text-muted'}`}>
+                  {retrainMsg}
+                </span>
+              )}
               <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-                  tab === t ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'
-                }`}
+                onClick={handleRetrain}
+                disabled={retraining}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-surface-2 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-surface hover:text-fg disabled:opacity-50"
               >
-                {t === 'classifier' ? 'Threat Classifier' : 'Anomaly Detector'}
+                {retraining ? (
+                  <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                  </svg>
+                ) : (
+                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                )}
+                {retraining ? 'Training...' : 'Retrain Model'}
               </button>
-            ))}
+            </div>
+            <div className="flex rounded-lg border border-border bg-surface-2 p-0.5">
+              {(['classifier', 'anomaly'] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    tab === t ? 'bg-surface text-fg shadow-sm' : 'text-muted hover:text-fg'
+                  }`}
+                >
+                  {t === 'classifier' ? 'Threat Classifier' : 'Anomaly Detector'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Best model summary metrics */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 overflow-x-auto pb-1">
           {(['accuracy', 'precision', 'recall', 'f1'] as const).map(metric => (
             <MetricBadge key={metric} value={bestModel[metric] as number} label={metric} />
           ))}
@@ -248,7 +328,7 @@ export default function Insights() {
         </div>
 
         {/* Model comparison + confusion matrix */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card title="Model Comparison — F1 Score">
             <ModelComparisonBar models={activeModels} metric="f1" />
             <div className="mt-3 space-y-1">
@@ -271,8 +351,8 @@ export default function Insights() {
           </Card>
         </div>
 
-        {/* Per-class radar + dataset distribution */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Per-class radar + feature importance + dataset */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {bestModel.per_class && (
             <Card title="Per-Class Precision / Recall / F1">
               <PerClassRadar perClass={bestModel.per_class} />
@@ -299,6 +379,16 @@ export default function Insights() {
             </div>
           </Card>
         </div>
+
+        {/* Feature importance — Random Forest only */}
+        {rfModel?.feature_importances && (
+          <Card title="Feature Importance — Random Forest">
+            <FeatureImportanceChart importances={rfModel.feature_importances} />
+            <p className="mt-2 text-[11px] text-dim">
+              Which input features the Random Forest relies on most when classifying a request as a threat.
+            </p>
+          </Card>
+        )}
       </div>
     </Layout>
   )

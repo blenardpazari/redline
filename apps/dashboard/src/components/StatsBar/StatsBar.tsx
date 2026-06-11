@@ -38,7 +38,7 @@ export default function StatsBar() {
   }, [])
 
   return (
-    <div className="flex gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
       <Stat label="Requests Today" value={stats.requests_today} />
       <Stat label="Anomalies" value={stats.anomalies_today} valueClass="text-sus" />
       <Stat label="Redlines Crossed" value={stats.redlines_today} valueClass="text-crit" />

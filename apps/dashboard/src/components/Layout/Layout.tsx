@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Sidebar from '../Sidebar/Sidebar'
 import TopBar from './TopBar'
 
@@ -8,12 +9,14 @@ interface Props {
 }
 
 export default function Layout({ children, full = false }: Props) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
     <div className="min-h-screen bg-bg text-fg">
-      <Sidebar />
-      <div className="flex min-h-screen flex-col pl-60">
-        <TopBar />
-        <main className={full ? 'relative flex-1' : 'flex-1 p-6'}>{children}</main>
+      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <div className="flex min-h-screen flex-col md:pl-60">
+        <TopBar onMenuOpen={() => setMobileOpen(true)} />
+        <main className={full ? 'relative flex-1' : 'flex-1 p-4 md:p-6'}>{children}</main>
       </div>
     </div>
   )

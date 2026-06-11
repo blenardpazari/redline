@@ -11,6 +11,8 @@ from app.routes.alerts import router as alerts_router
 from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
 from app.routes.health import router as health_router
+from app.routes.clustering import router as clustering_router
+from app.routes.explain import router as explain_router
 from app.routes.insights import router as insights_router
 from app.routes.ingest import router as ingest_router
 from app.routes.ip_inspector import router as ip_router
@@ -78,4 +80,6 @@ app.include_router(servers_router)
 app.include_router(users_router)
 app.include_router(health_router)
 app.include_router(insights_router)
+app.include_router(clustering_router)
+app.include_router(explain_router)
 app.include_router(ws_router)

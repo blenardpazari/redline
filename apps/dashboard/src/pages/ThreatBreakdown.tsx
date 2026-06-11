@@ -46,7 +46,7 @@ export default function ThreatBreakdown() {
             ))}
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col gap-4 md:flex-row">
           <BreakdownPie items={items} />
           <RankedList items={items} />
         </div>
