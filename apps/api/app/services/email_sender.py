@@ -12,6 +12,7 @@ def send_critical_alert(
     score: float,
     path: str,
     timestamp: str,
+    recipient: str | None = None,
 ) -> None:
     body = (
         f"IP:       {ip}\n"
@@ -22,12 +23,23 @@ def send_critical_alert(
         f"Time:     {timestamp}\n"
         "\n—\nRedline"
     )
-
     msg = MIMEText(body)
     msg["Subject"] = f"[Redline] CRITICAL — {threat_type}"
     msg["From"] = cfg.smtp_user
-    msg["To"] = cfg.alert_email_to
+    msg["To"] = recipient or cfg.alert_email_to
+    _send(cfg, msg)
 
+
+def send_test_alert(cfg: AppConfig, recipient: str) -> None:
+    body = "This is a test alert from Redline. Your email notifications are configured correctly.\n\n—\nRedline"
+    msg = MIMEText(body)
+    msg["Subject"] = "[Redline] Test Alert"
+    msg["From"] = cfg.smtp_user
+    msg["To"] = recipient
+    _send(cfg, msg)
+
+
+def _send(cfg: AppConfig, msg: MIMEText) -> None:
     with smtplib.SMTP(cfg.smtp_host, cfg.smtp_port) as server:
         server.ehlo()
         server.starttls()

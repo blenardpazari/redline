@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from app.db.queries import AlertInsert, check_alert_cooldown, insert_alert
+from app.db.queries import AlertInsert, check_alert_cooldown, get_effective_settings, insert_alert
 from app.services.email_sender import send_critical_alert
 from app.types.models import Alert, ThreatScore
 from config import AppConfig
@@ -13,14 +13,17 @@ def process(
     path: str,
     cfg: AppConfig,
 ) -> Alert | None:
-    if threat.final_score < 70:
+    settings = get_effective_settings()
+
+    if threat.final_score < settings["warning_threshold"]:
         return None
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     should_email = (
-        threat.final_score >= cfg.redline_threshold
-        and not check_alert_cooldown(ip, cfg.alert_cooldown_minutes)
+        bool(settings["email_enabled"])
+        and threat.final_score >= settings["critical_threshold"]
+        and not check_alert_cooldown(ip, settings["cooldown_minutes"])
     )
 
     alert_insert = AlertInsert(
@@ -36,6 +39,7 @@ def process(
     alert_id = insert_alert(alert_insert)
 
     if should_email:
+        recipient = settings["email_recipient"] or cfg.alert_email_to
         send_critical_alert(
             cfg,
             ip=ip,
@@ -44,6 +48,7 @@ def process(
             score=threat.final_score,
             path=path,
             timestamp=now,
+            recipient=recipient,
         )
 
     return Alert(
