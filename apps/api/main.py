@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -9,23 +10,54 @@ from app.routes.alert_settings import router as alert_settings_router
 from app.routes.alerts import router as alerts_router
 from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
+from app.routes.cloudflare import router as cloudflare_router
+from app.routes.sites import router as sites_router
 from app.routes.connectors import router as connectors_router
+from app.routes.geo_blocks import router as geo_blocks_router
+from app.routes.health import router as health_router
 from app.routes.ingest import router as ingest_router
 from app.routes.ip_inspector import router as ip_router
 from app.routes.log_explorer import router as log_explorer_router
 from app.routes.logs import router as logs_router
+from app.routes.rate_limits import router as rate_limits_router
+from app.routes.servers import router as servers_router
 from app.routes.stats import router as stats_router
+from app.routes.users import router as users_router
+from app.db.queries import purge_old_entries
+from app.services.cf_poller import run_poller
 from app.services.scorer import load_models
 from config import get_config
 from ws.stream import router as ws_router
+
+
+async def _retention_loop(retention_days: int) -> None:
+    while True:
+        await asyncio.sleep(24 * 3600)
+        try:
+            logs, alerts = purge_old_entries(retention_days)
+            if logs or alerts:
+                print(f"[retention] purged {logs} log entries, {alerts} alerts older than {retention_days}d")
+        except Exception as exc:
+            print(f"[retention] error: {exc}")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cfg = get_config()
     get_connection()
-    app.state.models = load_models(cfg.ml_artifacts_path)
-    yield
+    models = load_models(cfg.ml_artifacts_path)
+    app.state.models = models
+    poller_task = asyncio.create_task(run_poller(models))
+    retention_task = asyncio.create_task(_retention_loop(cfg.log_retention_days))
+    try:
+        yield
+    finally:
+        for task in (poller_task, retention_task):
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(title="Redline API", lifespan=lifespan)
@@ -50,4 +82,11 @@ app.include_router(stats_router)
 app.include_router(connectors_router)
 app.include_router(alert_settings_router)
 app.include_router(ingest_router)
+app.include_router(servers_router)
+app.include_router(users_router)
+app.include_router(geo_blocks_router)
+app.include_router(rate_limits_router)
+app.include_router(health_router)
+app.include_router(cloudflare_router)
+app.include_router(sites_router)
 app.include_router(ws_router)

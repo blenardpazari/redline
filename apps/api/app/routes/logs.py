@@ -11,6 +11,7 @@ router = APIRouter(prefix="/logs", tags=["logs"])
 def list_logs(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
+    server_id: int | None = Query(default=None),
     _: str = Depends(require_auth),
 ) -> list[LogEntry]:
-    return get_log_entries(limit, offset)
+    return get_log_entries(limit, offset, server_id=server_id)

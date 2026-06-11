@@ -15,7 +15,7 @@ const LEVEL_RADIUS: Record<ThreatLevel, number> = {
   critical: 10, warning: 7, suspicious: 5, normal: 3,
 }
 
-type GeoEntry = LogEntry & { lat: number; lon: number }
+type GeoEntry = LogEntry & { lat: number; lon: number; final_score?: number | null }
 
 interface Props {
   entries: LogEntry[]

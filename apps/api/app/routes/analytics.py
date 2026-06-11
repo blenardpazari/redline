@@ -50,12 +50,13 @@ def _fill_daily(rows: list[dict], days: int) -> tuple[list, list, list, list]:
 
 @router.get("/analytics")
 async def analytics(
-    period: Annotated[str, Query(alias="range")] = "24h",
+    period:    Annotated[str, Query(alias="range")] = "24h",
+    server_id: Annotated[int | None, Query()] = None,
     _: str = Depends(require_auth),
 ) -> dict:
     since, label_fmt, group_fmt = _RANGE_CFG.get(period, _RANGE_CFG["24h"])
-    rows = get_analytics_rows(since, label_fmt, group_fmt)
-    peak = get_peak_per_minute(since)
+    rows = get_analytics_rows(since, label_fmt, group_fmt, server_id=server_id)
+    peak = get_peak_per_minute(since, server_id=server_id)
 
     if period == "24h":
         labels, normal, anomaly, critical = _fill_hourly(rows)

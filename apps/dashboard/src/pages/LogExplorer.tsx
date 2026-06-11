@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import FilterBar, { type Filters } from '../components/LogExplorer/FilterBar'
 import ResultsTable from '../components/LogExplorer/ResultsTable'
 import Layout from '../components/Layout/Layout'
+import { useServer } from '../context/ServerContext'
 import { useDebounce } from '../hooks/useDebounce'
 import { api } from '../lib/api'
 import type { LogEntry, LogSearchResponse } from '../types'
@@ -22,6 +23,7 @@ function exportCsv(entries: LogEntry[]) {
 }
 
 export default function LogExplorer() {
+  const { selectedServerId } = useServer()
   const [filters, setFilters] = useState<Filters>({ q: '', threatLevel: '', status: '', from: '', to: '' })
   const [sort, setSort] = useState<SortField>('timestamp')
   const [order, setOrder] = useState<SortOrder>('desc')
@@ -29,7 +31,7 @@ export default function LogExplorer() {
   const [data, setData] = useState<LogSearchResponse | null>(null)
   const debouncedQ = useDebounce(filters.q, 300)
 
-  useEffect(() => { setPage(1) }, [debouncedQ, filters.threatLevel, filters.status, filters.from, filters.to, sort, order])
+  useEffect(() => { setPage(1) }, [debouncedQ, filters.threatLevel, filters.status, filters.from, filters.to, sort, order, selectedServerId])
 
   useEffect(() => {
     const p = new URLSearchParams({ page: String(page), limit: '50', sort, order })
@@ -38,8 +40,9 @@ export default function LogExplorer() {
     if (filters.status) p.set('status', filters.status)
     if (filters.from) p.set('from', filters.from)
     if (filters.to) p.set('to', filters.to)
+    if (selectedServerId) p.set('server_id', String(selectedServerId))
     api.get<LogSearchResponse>(`/logs/search?${p}`).then(setData).catch(() => undefined)
-  }, [debouncedQ, filters.threatLevel, filters.status, filters.from, filters.to, sort, order, page])
+  }, [debouncedQ, filters.threatLevel, filters.status, filters.from, filters.to, sort, order, page, selectedServerId])
 
   function handleSort(field: SortField) {
     if (field === sort) setOrder((o) => o === 'asc' ? 'desc' : 'asc')

@@ -3,6 +3,7 @@ import BarBreakdown from '../components/Analytics/BarBreakdown'
 import MetricCards from '../components/Analytics/MetricCards'
 import TrendChart from '../components/Analytics/TrendChart'
 import Layout from '../components/Layout/Layout'
+import { useServer } from '../context/ServerContext'
 import { api } from '../lib/api'
 import type { AnalyticsPoint, AnalyticsResponse } from '../types'
 import styles from './Analytics.module.css'
@@ -20,14 +21,16 @@ function toPoints(r: AnalyticsResponse): AnalyticsPoint[] {
 }
 
 export default function Analytics() {
+  const { selectedServerId } = useServer()
   const [range, setRange] = useState<Range>('24h')
   const [data, setData] = useState<AnalyticsResponse | null>(null)
 
   useEffect(() => {
-    api.get<AnalyticsResponse>(`/analytics?range=${range}`)
+    const sid = selectedServerId ? `&server_id=${selectedServerId}` : ''
+    api.get<AnalyticsResponse>(`/analytics?range=${range}${sid}`)
       .then(setData)
       .catch(() => undefined)
-  }, [range])
+  }, [range, selectedServerId])
 
   const points = data ? toPoints(data) : []
   const total = points.reduce((s, p) => s + p.normal + p.anomaly + p.critical, 0)

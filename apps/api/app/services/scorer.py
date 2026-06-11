@@ -62,8 +62,12 @@ def _anomaly_score(artifact: _AnomalyArtifact, entry: ScorerInput) -> float:
 
 def _classifier_score(artifact: _ClassifierArtifact, path: str) -> tuple[str, float]:
     probs = artifact["pipeline"].predict_proba([path])[0]
+    classes = artifact["classes"]
     idx = int(np.argmax(probs))
-    return artifact["classes"][idx], float(probs[idx] * 100)
+    threat_type = classes[idx]
+    normal_idx = list(classes).index("NORMAL") if "NORMAL" in classes else -1
+    attack_prob = 1.0 - (probs[normal_idx] if normal_idx >= 0 else 0.0)
+    return threat_type, float(attack_prob * 100)
 
 
 def _threat_level(final_score: float) -> ThreatLevel:
@@ -71,7 +75,7 @@ def _threat_level(final_score: float) -> ThreatLevel:
         return "critical"
     if final_score >= 70:
         return "warning"
-    if final_score >= 40:
+    if final_score >= 55:
         return "suspicious"
     return "normal"
 

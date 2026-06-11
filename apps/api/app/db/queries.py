@@ -3,7 +3,21 @@ from app.db.connection import get_connection
 from app.types.models import Alert, LogEntry
 
 
-class LogEntryInsert(TypedDict):
+def purge_old_entries(retention_days: int) -> tuple[int, int]:
+    """Delete log entries and alerts older than retention_days. Returns (logs_deleted, alerts_deleted)."""
+    conn = get_connection()
+    cutoff = f"datetime('now', '-{retention_days} days')"
+    logs = conn.execute(
+        f"DELETE FROM log_entries WHERE timestamp < {cutoff}"
+    ).rowcount
+    alerts = conn.execute(
+        f"DELETE FROM alerts WHERE created_at < {cutoff}"
+    ).rowcount
+    conn.commit()
+    return logs, alerts
+
+
+class LogEntryInsert(TypedDict, total=False):
     timestamp: str
     ip: str
     country: str | None
@@ -17,6 +31,7 @@ class LogEntryInsert(TypedDict):
     threat_score: float
     threat_type: str | None
     raw: str
+    server_id: int | None
 
 
 class AlertInsert(TypedDict):
@@ -29,20 +44,26 @@ class AlertInsert(TypedDict):
     email_sent: bool
 
 
+def _server_filter(server_id: int | None) -> tuple[str, list]:
+    if server_id is not None:
+        return "server_id = ?", [server_id]
+    return "", []
+
+
 def insert_log_entry(entry: LogEntryInsert) -> int:
     conn = get_connection()
     cursor = conn.execute(
         """
         INSERT INTO log_entries
             (timestamp, ip, country, lat, lon, method, path,
-             status_code, response_time_ms, threat_level, threat_score, threat_type, raw)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             status_code, response_time_ms, threat_level, threat_score, threat_type, raw, server_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            entry["timestamp"], entry["ip"], entry["country"], entry["lat"],
-            entry["lon"], entry["method"], entry["path"], entry["status_code"],
+            entry["timestamp"], entry["ip"], entry.get("country"), entry.get("lat"),
+            entry.get("lon"), entry["method"], entry["path"], entry["status_code"],
             entry["response_time_ms"], entry["threat_level"], entry["threat_score"],
-            entry["threat_type"], entry["raw"],
+            entry.get("threat_type"), entry["raw"], entry.get("server_id"),
         ),
     )
     conn.commit()
@@ -51,32 +72,34 @@ def insert_log_entry(entry: LogEntryInsert) -> int:
     return cursor.lastrowid
 
 
-def get_log_entries(limit: int, offset: int) -> list[LogEntry]:
+def get_log_entries(limit: int, offset: int, server_id: int | None = None) -> list[LogEntry]:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    where = f"WHERE {clause}" if clause else ""
     cursor = conn.execute(
-        """
+        f"""
         SELECT id, timestamp, ip, country, lat, lon, method, path,
                status_code, response_time_ms, threat_level, threat_score, threat_type
-        FROM log_entries
+        FROM log_entries {where}
         ORDER BY timestamp DESC
         LIMIT ? OFFSET ?
         """,
-        (limit, offset),
+        [*params, limit, offset],
     )
     return [LogEntry(**dict(row)) for row in cursor.fetchall()]
 
 
-def insert_alert(alert: AlertInsert) -> int:
+def insert_alert(alert: AlertInsert, server_id: int | None = None) -> int:
     conn = get_connection()
     cursor = conn.execute(
         """
-        INSERT INTO alerts (created_at, ip, country, threat_type, score, path, email_sent)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO alerts (created_at, ip, country, threat_type, score, path, email_sent, server_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             alert["created_at"], alert["ip"], alert["country"],
             alert["threat_type"], alert["score"], alert["path"],
-            int(alert["email_sent"]),
+            int(alert["email_sent"]), server_id,
         ),
     )
     conn.commit()
@@ -85,31 +108,36 @@ def insert_alert(alert: AlertInsert) -> int:
     return cursor.lastrowid
 
 
-def get_alerts(limit: int, offset: int) -> list[Alert]:
+def get_alerts(limit: int, offset: int, server_id: int | None = None) -> list[Alert]:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    where = f"WHERE {clause}" if clause else ""
     cursor = conn.execute(
-        """
+        f"""
         SELECT id, created_at, ip, country, threat_type, score, path, email_sent
-        FROM alerts
+        FROM alerts {where}
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
         """,
-        (limit, offset),
+        [*params, limit, offset],
     )
     return [Alert(**dict(row)) for row in cursor.fetchall()]
 
 
-def get_stats() -> dict[str, int]:
+def get_stats(server_id: int | None = None) -> dict[str, int]:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    date_clause = "date(timestamp) = date('now')"
+    where = f"WHERE {date_clause} AND {clause}" if clause else f"WHERE {date_clause}"
     cursor = conn.execute(
-        """
+        f"""
         SELECT
             COUNT(*) AS requests_today,
             SUM(CASE WHEN threat_level IN ('suspicious','warning','critical') THEN 1 ELSE 0 END) AS anomalies_today,
             SUM(CASE WHEN threat_level = 'critical' THEN 1 ELSE 0 END) AS redlines_today
-        FROM log_entries
-        WHERE date(timestamp) = date('now')
-        """
+        FROM log_entries {where}
+        """,
+        params,
     )
     row = dict(cursor.fetchone())
     return {
@@ -119,11 +147,13 @@ def get_stats() -> dict[str, int]:
     }
 
 
-def count_recent_requests(ip: str, minutes: int) -> int:
+def count_recent_requests(ip: str, minutes: int, server_id: int | None = None) -> int:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    extra = f" AND {clause}" if clause else ""
     cursor = conn.execute(
-        "SELECT COUNT(*) FROM log_entries WHERE ip = ? AND timestamp > datetime('now', ?)",
-        (ip, f"-{minutes} minutes"),
+        f"SELECT COUNT(*) FROM log_entries WHERE ip = ? AND timestamp > datetime('now', ?){extra}",
+        [ip, f"-{minutes} minutes", *params],
     )
     return int(cursor.fetchone()[0])
 
@@ -138,10 +168,14 @@ def search_log_entries(
     order: str,
     page: int,
     limit: int,
+    server_id: int | None = None,
 ) -> tuple[list[LogEntry], int]:
     conditions: list[str] = []
     params: list[object] = []
 
+    if server_id is not None:
+        conditions.append("server_id = ?")
+        params.append(server_id)
     if q:
         conditions.append("(ip LIKE ? OR path LIKE ?)")
         params.extend([f"%{q}%", f"%{q}%"])
@@ -218,8 +252,10 @@ def get_ip_profile(ip: str) -> dict | None:
     return profile
 
 
-def get_analytics_rows(since: str, label_fmt: str, group_fmt: str) -> list[dict]:
+def get_analytics_rows(since: str, label_fmt: str, group_fmt: str, server_id: int | None = None) -> list[dict]:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    extra = f" AND {clause}" if clause else ""
     cursor = conn.execute(
         f"""
         SELECT
@@ -228,27 +264,29 @@ def get_analytics_rows(since: str, label_fmt: str, group_fmt: str) -> list[dict]
             SUM(CASE WHEN threat_level IN ('suspicious', 'warning') THEN 1 ELSE 0 END) AS anomaly,
             SUM(CASE WHEN threat_level = 'critical' THEN 1 ELSE 0 END) AS critical
         FROM log_entries
-        WHERE timestamp >= datetime('now', ?)
+        WHERE timestamp >= datetime('now', ?){extra}
         GROUP BY strftime('{group_fmt}', timestamp)
         ORDER BY strftime('{group_fmt}', timestamp)
         """,
-        (since,),
+        [since, *params],
     )
     return [dict(row) for row in cursor.fetchall()]
 
 
-def get_peak_per_minute(since: str) -> int:
+def get_peak_per_minute(since: str, server_id: int | None = None) -> int:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    extra = f" AND {clause}" if clause else ""
     cursor = conn.execute(
-        """
+        f"""
         SELECT COUNT(*) AS cnt
         FROM log_entries
-        WHERE timestamp >= datetime('now', ?)
+        WHERE timestamp >= datetime('now', ?){extra}
         GROUP BY strftime('%Y-%m-%d %H:%M', timestamp)
         ORDER BY cnt DESC
         LIMIT 1
         """,
-        (since,),
+        [since, *params],
     )
     row = cursor.fetchone()
     return int(row[0]) if row else 0
@@ -303,17 +341,19 @@ def upsert_settings(s: dict) -> None:
     conn.commit()
 
 
-def get_threat_breakdown_data(since: str) -> dict:
+def get_threat_breakdown_data(since: str, server_id: int | None = None) -> dict:
     conn = get_connection()
+    clause, params = _server_filter(server_id)
+    extra = f" AND {clause}" if clause else ""
     rows = conn.execute(
-        """
+        f"""
         SELECT COALESCE(threat_type, 'NORMAL') AS threat_type, COUNT(*) AS count
         FROM log_entries
-        WHERE timestamp >= datetime('now', ?)
+        WHERE timestamp >= datetime('now', ?){extra}
         GROUP BY threat_type
         ORDER BY count DESC
         """,
-        (since,),
+        [since, *params],
     ).fetchall()
     total = sum(r[1] for r in rows)
     breakdown = [
@@ -325,29 +365,29 @@ def get_threat_breakdown_data(since: str) -> dict:
         for r in rows
     ]
     top_path = conn.execute(
-        """
+        f"""
         SELECT path FROM log_entries
-        WHERE timestamp >= datetime('now', ?) AND threat_level != 'normal'
+        WHERE timestamp >= datetime('now', ?) AND threat_level != 'normal'{extra}
         GROUP BY path ORDER BY COUNT(*) DESC LIMIT 1
         """,
-        (since,),
+        [since, *params],
     ).fetchone()
     top_ip = conn.execute(
-        """
+        f"""
         SELECT ip FROM log_entries
-        WHERE timestamp >= datetime('now', ?) AND threat_level != 'normal'
+        WHERE timestamp >= datetime('now', ?) AND threat_level != 'normal'{extra}
         GROUP BY ip ORDER BY COUNT(*) DESC LIMIT 1
         """,
-        (since,),
+        [since, *params],
     ).fetchone()
     busiest = conn.execute(
-        """
+        f"""
         SELECT CAST(strftime('%H', timestamp) AS INTEGER) AS hour
         FROM log_entries
-        WHERE timestamp >= datetime('now', ?)
+        WHERE timestamp >= datetime('now', ?){extra}
         GROUP BY hour ORDER BY COUNT(*) DESC LIMIT 1
         """,
-        (since,),
+        [since, *params],
     ).fetchone()
     return {
         "breakdown": breakdown,

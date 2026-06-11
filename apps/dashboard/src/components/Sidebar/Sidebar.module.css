@@ -56,6 +56,39 @@
   padding-left: 18px;
 }
 
+.serverSelect {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.serverLabel {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--text-muted);
+}
+
+.serverDropdown {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  width: 100%;
+}
+
+.serverDropdown:focus {
+  outline: none;
+  border-color: rgba(255,255,255,.15);
+}
+
 .logout {
   margin: auto 20px 0;
   background: none;

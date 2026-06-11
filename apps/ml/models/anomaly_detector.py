@@ -28,15 +28,20 @@ def train(df: pd.DataFrame, artifacts_path: str) -> None:
 
     model = IsolationForest(
         n_estimators=200,
-        contamination=0.20,
+        contamination=0.05,
         random_state=42,
         n_jobs=-1,
     )
     model.fit(X)
 
-    raw_scores = -model.decision_function(X)
+    # Calibrate scaler on normal-only scores so clean traffic anchors low (~10-25)
+    # and attack traffic pushes into the upper range (60+).
+    X_normal = df.loc[df["threat_type"] == "NORMAL", FEATURE_COLS].astype(float).values
+    X_attack = df.loc[df["threat_type"] != "NORMAL", FEATURE_COLS].astype(float).values
+    normal_scores = -model.decision_function(X_normal)
+    attack_scores = -model.decision_function(X_attack)
     scaler = MinMaxScaler(feature_range=(0, 100))
-    scaler.fit(raw_scores.reshape(-1, 1))
+    scaler.fit(np.concatenate([normal_scores, attack_scores]).reshape(-1, 1))
 
     joblib.dump(AnomalyArtifact(model=model, scaler=scaler), Path(artifacts_path) / _ARTIFACT)
 

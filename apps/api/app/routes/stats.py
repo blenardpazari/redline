@@ -28,11 +28,12 @@ class StatsResponse(BaseModel):
 
 @router.get("", response_model=StatsResponse)
 def get_stats_route(
-    period: Annotated[str | None, Query(alias="range")] = None,
+    period:    Annotated[str | None, Query(alias="range")] = None,
+    server_id: Annotated[int | None, Query()] = None,
     _: str = Depends(require_auth),
 ) -> StatsResponse:
-    base = get_stats()
+    base = get_stats(server_id=server_id)
     if period and period in _RANGE_MAP:
-        extra = get_threat_breakdown_data(_RANGE_MAP[period])
+        extra = get_threat_breakdown_data(_RANGE_MAP[period], server_id=server_id)
         return StatsResponse(**base, **extra)
     return StatsResponse(**base)

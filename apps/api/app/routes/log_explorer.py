@@ -28,6 +28,7 @@ def log_search(
     order:        Annotated[str, Query()] = "desc",
     page:         Annotated[int, Query(ge=1)] = 1,
     limit:        Annotated[int, Query(ge=1, le=200)] = 50,
+    server_id:    Annotated[int | None, Query()] = None,
     _:            str = Depends(require_auth),
 ) -> LogSearchResponse:
     valid_sorts = {"timestamp", "threat_score", "status_code"}
@@ -41,5 +42,6 @@ def log_search(
         order=order if order in ("asc", "desc") else "desc",
         page=page,
         limit=limit,
+        server_id=server_id,
     )
     return LogSearchResponse(entries=entries, total=total, page=page, limit=limit)

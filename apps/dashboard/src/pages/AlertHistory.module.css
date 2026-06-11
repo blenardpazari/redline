@@ -1,0 +1,36 @@
+.page { padding: 2rem; max-width: 1400px; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+.title { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; margin: 0 0 .25rem; }
+.subtitle { color: #64748b; font-size: .875rem; margin: 0; }
+.toggle { display: flex; align-items: center; gap: .5rem; color: #94a3b8; font-size: .85rem; cursor: pointer; }
+.toggle input { accent-color: #ef4444; }
+.count { color: #64748b; font-size: .85rem; margin: 0 0 1rem; }
+
+.tableWrap { overflow-x: auto; border: 1px solid #1e293b; border-radius: 8px; }
+.table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.table th { text-align: left; padding: .6rem 1rem; background: #0f172a; color: #475569; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid #1e293b; }
+.table td { padding: .6rem 1rem; border-bottom: 1px solid #0f172a; color: #94a3b8; }
+.table tr:hover td { background: #0a1628; }
+.acked td { opacity: .5; }
+.mono { font-family: monospace; }
+.path { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.threat { font-weight: 600; font-size: .75rem; }
+.score { font-weight: 700; font-family: monospace; }
+.ackedBadge { background: #052e16; color: #4ade80; border: 1px solid #16a34a; border-radius: 999px; padding: .1rem .5rem; font-size: .7rem; font-weight: 600; }
+.pendingBadge { background: #1c1917; color: #f59e0b; border: 1px solid #b45309; border-radius: 999px; padding: .1rem .5rem; font-size: .7rem; font-weight: 600; }
+.ackBtn { background: #1e293b; color: #94a3b8; border: none; border-radius: 4px; padding: .25rem .6rem; font-size: .75rem; cursor: pointer; white-space: nowrap; }
+.ackBtn:hover { background: #334155; color: #e2e8f0; }
+
+.pagination { display: flex; align-items: center; gap: 1rem; justify-content: center; padding: 1.5rem 0; }
+.pageBtn { background: #1e293b; color: #94a3b8; border: none; border-radius: 6px; padding: .4rem .9rem; font-size: .85rem; cursor: pointer; }
+.pageBtn:disabled { opacity: .4; cursor: default; }
+.pageInfo { color: #64748b; font-size: .85rem; }
+
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modalBox { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 2rem; width: 400px; }
+.modalTitle { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; margin: 0 0 .4rem; }
+.modalSub { color: #64748b; font-size: .85rem; margin: 0 0 1rem; }
+.noteInput { width: 100%; background: #020617; border: 1px solid #1e293b; border-radius: 6px; color: #e2e8f0; padding: .5rem .75rem; font-size: .875rem; resize: vertical; box-sizing: border-box; }
+.modalActions { display: flex; gap: .75rem; justify-content: flex-end; margin-top: 1rem; }
+.cancelBtn { background: #1e293b; color: #94a3b8; border: none; border-radius: 6px; padding: .5rem 1rem; font-size: .875rem; cursor: pointer; }
+.submitBtn { background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: .5rem 1.25rem; font-size: .875rem; font-weight: 600; cursor: pointer; }

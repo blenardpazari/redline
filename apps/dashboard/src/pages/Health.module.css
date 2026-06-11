@@ -1,0 +1,33 @@
+.page { padding: 2rem; max-width: 900px; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+.title { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; margin: 0 0 .25rem; }
+.subtitle { color: #64748b; font-size: .875rem; margin: 0; }
+.loading { padding: 4rem 2rem; color: #64748b; }
+.refreshBtn { background: #1e293b; color: #94a3b8; border: none; border-radius: 6px; padding: .5rem 1rem; font-size: .875rem; cursor: pointer; }
+.refreshBtn:hover { background: #334155; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.card { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; gap: .4rem; }
+.label { font-size: .75rem; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.value { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; }
+
+.section { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+.sectionTitle { font-size: 1rem; font-weight: 600; color: #e2e8f0; margin: 0 0 .4rem; }
+.sectionSub { color: #64748b; font-size: .85rem; margin: 0 0 1rem; }
+.serverBar { height: 6px; background: #1e293b; border-radius: 999px; overflow: hidden; }
+.serverFill { height: 100%; background: #4ade80; border-radius: 999px; transition: width .4s; }
+
+.dbRow { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.dbStat { display: flex; flex-direction: column; gap: .3rem; }
+.dbLabel { font-size: .75rem; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.dbVal { font-size: 1.25rem; font-weight: 700; color: #94a3b8; font-family: monospace; }
+
+.purgeRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1rem; border-top: 1px solid #1e293b; }
+.purgeHint { color: #64748b; font-size: .8rem; margin: 0; }
+.purgeResult { color: #4ade80; font-size: .8rem; margin: .4rem 0 0; }
+.purgeActions { display: flex; gap: .5rem; flex-shrink: 0; }
+.purgeBtn { background: #1e293b; color: #f87171; border: 1px solid #3b1f1f; border-radius: 6px; padding: .45rem 1rem; font-size: .8rem; cursor: pointer; white-space: nowrap; }
+.purgeBtn:hover:not(:disabled) { background: #2d1515; }
+.purgeAllBtn { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; border-radius: 6px; padding: .45rem 1rem; font-size: .8rem; cursor: pointer; white-space: nowrap; }
+.purgeAllBtn:hover:not(:disabled) { background: #991b1b; }
+.purgeBtn:disabled, .purgeAllBtn:disabled { opacity: .5; cursor: not-allowed; }

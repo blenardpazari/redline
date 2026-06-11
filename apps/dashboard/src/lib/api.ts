@@ -13,11 +13,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (res.status === 204) return undefined as unknown as T
   return res.json() as Promise<T>
 }
 
 export const api = {
   get: <T>(path: string): Promise<T> => request<T>(path),
-  post: <T>(path: string, body: unknown): Promise<T> =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(path: string, body?: unknown): Promise<T> =>
+    request<T>(path, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined }),
+  patch: <T>(path: string, body: unknown): Promise<T> =>
+    request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T = void>(path: string): Promise<T> =>
+    request<T>(path, { method: 'DELETE' }),
 }

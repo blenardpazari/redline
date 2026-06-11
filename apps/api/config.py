@@ -24,6 +24,7 @@ class AppConfig:
     frontend_url: str
     redline_threshold: float
     alert_cooldown_minutes: int
+    log_retention_days: int
 
 
 @lru_cache(maxsize=1)
@@ -45,4 +46,5 @@ def get_config() -> AppConfig:
         frontend_url=os.environ.get("FRONTEND_URL", "http://localhost:5173"),
         redline_threshold=float(os.environ.get("REDLINE_THRESHOLD", "85")),
         alert_cooldown_minutes=int(os.environ.get("ALERT_COOLDOWN_MINUTES", "15")),
+        log_retention_days=int(os.environ.get("LOG_RETENTION_DAYS", "30")),
     )

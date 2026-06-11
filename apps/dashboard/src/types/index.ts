@@ -125,3 +125,105 @@ export interface ThreatBreakdownResponse {
   top_ip: string | null
   busiest_hour: number | null
 }
+
+export type ServerStatus = 'online' | 'offline' | 'unconfigured'
+export type ServerEnv = 'production' | 'staging' | 'dev'
+export type ServerSourceType = 'nginx' | 'apache' | 'caddy' | 'gcp' | 'cloudflare' | 'hetzner' | 'syslog' | 'http'
+
+export interface Server {
+  id: number
+  name: string
+  env: ServerEnv
+  source_type: ServerSourceType
+  api_key: string
+  status: ServerStatus
+  last_seen: string | null
+  created_at: string
+  total_events: number
+  last_event: string | null
+  setup?: { title: string; steps: string[] }
+}
+
+export interface ServerStats {
+  requests_today: number
+  anomalies_today: number
+  redlines_today: number
+}
+
+export interface Site {
+  id: number
+  server_id: number
+  name: string
+  zone_id: string
+  zone_name: string
+  last_poll: string | null
+  total_pulled: number
+  enabled: boolean
+  created_at: string
+}
+
+export type UserRole = 'admin' | 'viewer'
+
+export interface User {
+  id: number
+  username: string
+  role: UserRole
+  created_at: string
+  last_login: string | null
+}
+
+export interface GeoBlock {
+  id: number
+  server_id: number | null
+  country_code: string
+  created_at: string
+  created_by: string
+}
+
+export interface RateBlock {
+  id: number
+  ip: string
+  server_id: number | null
+  blocked_at: string
+  expires_at: string
+  reason: string
+}
+
+export interface AlertFull extends Alert {
+  server_id: number | null
+  acked_at: string | null
+  acked_by: string | null
+  ack_note: string | null
+}
+
+export interface AlertsFullResponse {
+  alerts: AlertFull[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface CfZone {
+  id: number
+  server_id: number
+  server_name: string | null
+  zone_id: string
+  zone_name: string
+  api_token: string
+  last_poll: string | null
+  total_pulled: number
+  enabled: boolean
+  created_at: string
+}
+
+export interface HealthResponse {
+  status: string
+  uptime_seconds: number
+  db_size_bytes: number
+  db_log_count: number
+  db_alert_count: number
+  ml_model_version: string
+  servers_total: number
+  servers_online: number
+  api_version: string
+}

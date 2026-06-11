@@ -12,6 +12,7 @@ def process(
     country: str | None,
     path: str,
     cfg: AppConfig,
+    server_id: int | None = None,
 ) -> Alert | None:
     settings = get_effective_settings()
 
@@ -36,7 +37,7 @@ def process(
         email_sent=should_email,
     )
 
-    alert_id = insert_alert(alert_insert)
+    alert_id = insert_alert(alert_insert, server_id=server_id)
 
     if should_email:
         recipient = settings["email_recipient"] or cfg.alert_email_to

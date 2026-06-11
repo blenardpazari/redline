@@ -5,6 +5,9 @@ node_modules/
 dist/
 .env
 *.db
+*.db-shm
+*.db-wal
+apps/api/data/
 apps/ml/artifacts/*.joblib
 apps/ml/artifacts/*.pkl
 .DS_Store
