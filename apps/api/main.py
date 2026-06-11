@@ -10,16 +10,12 @@ from app.routes.alert_settings import router as alert_settings_router
 from app.routes.alerts import router as alerts_router
 from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
-from app.routes.cloudflare import router as cloudflare_router
-from app.routes.sites import router as sites_router
 from app.routes.connectors import router as connectors_router
-from app.routes.geo_blocks import router as geo_blocks_router
 from app.routes.health import router as health_router
 from app.routes.ingest import router as ingest_router
 from app.routes.ip_inspector import router as ip_router
 from app.routes.log_explorer import router as log_explorer_router
 from app.routes.logs import router as logs_router
-from app.routes.rate_limits import router as rate_limits_router
 from app.routes.servers import router as servers_router
 from app.routes.stats import router as stats_router
 from app.routes.users import router as users_router
@@ -84,9 +80,5 @@ app.include_router(alert_settings_router)
 app.include_router(ingest_router)
 app.include_router(servers_router)
 app.include_router(users_router)
-app.include_router(geo_blocks_router)
-app.include_router(rate_limits_router)
 app.include_router(health_router)
-app.include_router(cloudflare_router)
-app.include_router(sites_router)
 app.include_router(ws_router)

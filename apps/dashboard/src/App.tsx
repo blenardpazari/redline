@@ -11,7 +11,6 @@ import Insights from './pages/Insights'
 import IpInspector from './pages/IpInspector'
 import LogExplorer from './pages/LogExplorer'
 import Login from './pages/Login'
-import Security from './pages/Security'
 import Sites from './pages/Sites'
 import ThreatBreakdown from './pages/ThreatBreakdown'
 import ThreatMap from './pages/ThreatMap'
@@ -45,7 +44,6 @@ export default function App() {
           <Route path="/alerts"    element={<Protected><AlertHistory /></Protected>} />
           <Route path="/users"     element={<Protected><Users /></Protected>} />
           <Route path="/health"    element={<Protected><Health /></Protected>} />
-          <Route path="/security"  element={<Protected><Security /></Protected>} />
           <Route path="*"          element={<Navigate to="/" replace />} />
         </Routes>
       </ServerProvider>

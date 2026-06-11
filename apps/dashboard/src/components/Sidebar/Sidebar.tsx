@@ -25,7 +25,6 @@ const NAV = [
     items: [
       { label: 'Alert History', to: '/alerts' },
       { label: 'Sites',         to: '/sites' },
-      { label: 'Security',      to: '/security' },
     ],
   },
   {

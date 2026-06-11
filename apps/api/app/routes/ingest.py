@@ -4,13 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from pydantic import BaseModel
 
 from app.db.queries import insert_log_entry
-from app.db.server_queries import (
-    block_ip,
-    get_server_by_api_key,
-    is_country_blocked,
-    is_ip_blocked,
-    touch_server_last_seen,
-)
+from app.db.server_queries import get_server_by_api_key, touch_server_last_seen
 from app.services.alert_engine import process as process_alert
 from app.services.ingestion import parse_and_score
 from app.types.models import Alert, LogEntry
@@ -19,8 +13,6 @@ from config import get_config
 from ws.stream import broadcast_alert, broadcast_log
 
 router = APIRouter(tags=["ingest"])
-
-_RPM_BLOCK_THRESHOLD = 120
 
 
 class IngestRequest(BaseModel):
@@ -51,32 +43,9 @@ async def ingest(
     server_id: int | None = server["id"] if server else None
 
     try:
-        raw_data: dict = json.loads(body.raw)
-    except (json.JSONDecodeError, ValueError) as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
-
-    ip: str = raw_data.get("ip", "")
-    country: str | None = raw_data.get("country")
-
-    if is_country_blocked(country, server_id):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Country {country} is blocked on this server",
-        )
-
-    if is_ip_blocked(ip, server_id):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"IP {ip} is currently rate-limited",
-        )
-
-    try:
         entry_insert, threat = parse_and_score(body.raw, request.app.state.models)
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
-
-    if threat.anomaly_score > 0 and entry_insert.get("requests_per_minute", 0) >= _RPM_BLOCK_THRESHOLD:  # type: ignore[attr-defined]
-        block_ip(ip, server_id, duration_minutes=60, reason="rate_limit")
 
     entry_insert["server_id"] = server_id  # type: ignore[typeddict-unknown-key]
     entry_id = insert_log_entry(entry_insert)
@@ -115,20 +84,6 @@ async def ingest_webhook(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
     server_id: int = server["id"]
-
-    try:
-        raw_data: dict = json.loads(body.raw)
-    except (json.JSONDecodeError, ValueError) as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
-
-    ip: str = raw_data.get("ip", "")
-    country: str | None = raw_data.get("country")
-
-    if is_country_blocked(country, server_id):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Country {country} is blocked")
-
-    if is_ip_blocked(ip, server_id):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=f"IP {ip} is rate-limited")
 
     try:
         entry_insert, threat = parse_and_score(body.raw, request.app.state.models)

@@ -128,7 +128,7 @@ export interface ThreatBreakdownResponse {
 
 export type ServerStatus = 'online' | 'offline' | 'unconfigured'
 export type ServerEnv = 'production' | 'staging' | 'dev'
-export type ServerSourceType = 'nginx' | 'apache' | 'caddy' | 'gcp' | 'cloudflare' | 'hetzner' | 'syslog' | 'http'
+export type ServerSourceType = 'cloudpanel'
 
 export interface Server {
   id: number
@@ -172,22 +172,6 @@ export interface User {
   last_login: string | null
 }
 
-export interface GeoBlock {
-  id: number
-  server_id: number | null
-  country_code: string
-  created_at: string
-  created_by: string
-}
-
-export interface RateBlock {
-  id: number
-  ip: string
-  server_id: number | null
-  blocked_at: string
-  expires_at: string
-  reason: string
-}
 
 export interface AlertFull extends Alert {
   server_id: number | null

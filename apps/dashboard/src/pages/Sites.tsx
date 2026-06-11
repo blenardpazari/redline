@@ -2,18 +2,11 @@ import { useEffect, useState } from 'react'
 import Layout from '../components/Layout/Layout'
 import { api } from '../lib/api'
 import { useServer } from '../context/ServerContext'
-import type { Server, ServerEnv, ServerSourceType } from '../types'
+import type { Server, ServerEnv } from '../types'
 import styles from './Sites.module.css'
 
-const SOURCE_TYPES: { value: ServerSourceType | 'cloudpanel'; label: string; icon: string }[] = [
+const SOURCE_TYPES = [
   { value: 'cloudpanel', label: 'CloudPanel', icon: '☁️' },
-  { value: 'nginx', label: 'nginx', icon: '🟢' },
-  { value: 'apache', label: 'Apache', icon: '🟠' },
-  { value: 'caddy', label: 'Caddy', icon: '🔵' },
-  { value: 'hetzner', label: 'Hetzner VPS', icon: '🔴' },
-  { value: 'gcp', label: 'GCP Logging', icon: '☁️' },
-  { value: 'syslog', label: 'Syslog', icon: '📋' },
-  { value: 'http', label: 'HTTP / Webhook', icon: '🔗' },
 ]
 
 const ENVS: ServerEnv[] = ['production', 'staging', 'dev']
@@ -118,12 +111,6 @@ export default function Sites() {
                 <label className={styles.label}>
                   Name
                   <input className={styles.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. mysite.com" />
-                </label>
-                <label className={styles.label}>
-                  Server type
-                  <select className={styles.input} value={form.source_type} onChange={e => setForm(f => ({ ...f, source_type: e.target.value }))}>
-                    {SOURCE_TYPES.map(t => <option key={t.value} value={t.value}>{t.icon} {t.label}</option>)}
-                  </select>
                 </label>
                 <label className={styles.label}>
                   Environment
