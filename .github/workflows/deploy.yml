@@ -47,6 +47,15 @@ jobs:
           TARGET: ${{ secrets.VPS_API_PATH }}
           EXCLUDE: __pycache__, *.pyc, .env, data/, ml/artifacts/
 
+      - name: Deploy systemd service file
+        uses: easingthemes/ssh-deploy@v6.0.1
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.VPS_HOST }}
+          REMOTE_USER: ${{ secrets.VPS_USER }}
+          SOURCE: deploy/redline-api.service
+          TARGET: ${{ secrets.VPS_DEPLOY_PATH }}
+
       - name: Install Python deps & restart service
         uses: appleboy/ssh-action@v1.2.5
         with:
@@ -57,5 +66,9 @@ jobs:
             cd ${{ secrets.VPS_API_PATH }}
             python3 -m venv .venv
             .venv/bin/pip install -r requirements.txt --quiet
+            mkdir -p ~/.config/systemd/user
+            cp ${{ secrets.VPS_DEPLOY_PATH }}/redline-api.service ~/.config/systemd/user/redline-api.service
+            systemctl --user daemon-reload
+            systemctl --user enable redline-api
             systemctl --user restart redline-api
             systemctl --user is-active redline-api
