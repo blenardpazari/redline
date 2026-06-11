@@ -90,18 +90,6 @@ export interface AnalyticsResponse {
   peak_per_minute: number
 }
 
-export type ConnectorStatus = 'active' | 'inactive' | 'unconfigured'
-
-export interface Connector {
-  id: string
-  name: string
-  source_type: string
-  description: string
-  status: ConnectorStatus
-  total_events: number
-  last_event: string | null
-}
-
 export interface AlertSettings {
   critical_threshold: number
   warning_threshold: number

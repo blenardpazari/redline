@@ -5,7 +5,6 @@ import { ThemeProvider } from './context/ThemeContext'
 import AlertHistory from './pages/AlertHistory'
 import AlertSettings from './pages/AlertSettings'
 import Analytics from './pages/Analytics'
-import Connectors from './pages/Connectors'
 import Dashboard from './pages/Dashboard'
 import Health from './pages/Health'
 import Insights from './pages/Insights'
@@ -40,7 +39,6 @@ export default function App() {
             <Route path="/ip/:ip"    element={<Protected><IpInspector /></Protected>} />
             <Route path="/logs"      element={<Protected><LogExplorer /></Protected>} />
             <Route path="/breakdown" element={<Protected><ThreatBreakdown /></Protected>} />
-            <Route path="/connectors" element={<Protected><Connectors /></Protected>} />
             <Route path="/settings"  element={<Protected><AlertSettings /></Protected>} />
             <Route path="/sites"     element={<Protected><Sites /></Protected>} />
             <Route path="/alerts"    element={<Protected><AlertHistory /></Protected>} />

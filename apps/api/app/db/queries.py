@@ -292,14 +292,6 @@ def get_peak_per_minute(since: str, server_id: int | None = None) -> int:
     return int(row[0]) if row else 0
 
 
-def get_connector_stats() -> dict:
-    conn = get_connection()
-    row = conn.execute(
-        "SELECT COUNT(*) AS total, MAX(timestamp) AS last_event FROM log_entries"
-    ).fetchone()
-    return {"total": int(row["total"] or 0), "last_event": row["last_event"]}
-
-
 def get_effective_settings() -> dict:
     from config import get_config
     conn = get_connection()

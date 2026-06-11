@@ -62,41 +62,6 @@ CREATE TABLE IF NOT EXISTS users (
     last_login    TEXT
 );
 
--- Geo-blocking rules: block a country on a server (NULL server_id = all servers)
-CREATE TABLE IF NOT EXISTS geo_block_rules (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    server_id    INTEGER REFERENCES servers(id) ON DELETE CASCADE,
-    country_code TEXT NOT NULL,
-    created_at   TEXT NOT NULL,
-    created_by   TEXT NOT NULL DEFAULT 'admin',
-    UNIQUE(server_id, country_code)
-);
-
--- Rate-limit blocks: IPs auto-blocked after threshold exceeded
-CREATE TABLE IF NOT EXISTS rate_limit_blocks (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    ip         TEXT NOT NULL,
-    server_id  INTEGER REFERENCES servers(id) ON DELETE CASCADE,
-    blocked_at TEXT NOT NULL,
-    expires_at TEXT NOT NULL,
-    reason     TEXT NOT NULL DEFAULT 'rate_limit',
-    UNIQUE(ip, server_id)
-);
-
--- Cloudflare zone configurations (one per Cloudflare zone/domain)
-CREATE TABLE IF NOT EXISTS cf_zones (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    server_id   INTEGER NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
-    zone_id     TEXT NOT NULL UNIQUE,
-    zone_name   TEXT NOT NULL,
-    api_token   TEXT NOT NULL,
-    last_poll   TEXT,
-    total_pulled INTEGER NOT NULL DEFAULT 0,
-    enabled     INTEGER NOT NULL DEFAULT 1,
-    created_at  TEXT NOT NULL
-);
-
 CREATE INDEX IF NOT EXISTS idx_log_timestamp  ON log_entries(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_alerts_ip      ON alerts(ip, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_servers_key    ON servers(api_key);
-CREATE INDEX IF NOT EXISTS idx_blocks_ip      ON rate_limit_blocks(ip, expires_at);

@@ -10,7 +10,6 @@ from app.routes.alert_settings import router as alert_settings_router
 from app.routes.alerts import router as alerts_router
 from app.routes.analytics import router as analytics_router
 from app.routes.auth import router as auth_router
-from app.routes.connectors import router as connectors_router
 from app.routes.health import router as health_router
 from app.routes.ingest import router as ingest_router
 from app.routes.ip_inspector import router as ip_router
@@ -20,7 +19,6 @@ from app.routes.servers import router as servers_router
 from app.routes.stats import router as stats_router
 from app.routes.users import router as users_router
 from app.db.queries import purge_old_entries
-from app.services.cf_poller import run_poller
 from app.services.scorer import load_models
 from config import get_config
 from ws.stream import router as ws_router
@@ -43,17 +41,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     get_connection()
     models = load_models(cfg.ml_artifacts_path)
     app.state.models = models
-    poller_task = asyncio.create_task(run_poller(models))
     retention_task = asyncio.create_task(_retention_loop(cfg.log_retention_days))
     try:
         yield
     finally:
-        for task in (poller_task, retention_task):
-            task.cancel()
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
+        retention_task.cancel()
+        try:
+            await retention_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(title="Redline API", lifespan=lifespan)
@@ -75,7 +71,6 @@ app.include_router(alerts_router)
 app.include_router(analytics_router)
 app.include_router(ip_router)
 app.include_router(stats_router)
-app.include_router(connectors_router)
 app.include_router(alert_settings_router)
 app.include_router(ingest_router)
 app.include_router(servers_router)
