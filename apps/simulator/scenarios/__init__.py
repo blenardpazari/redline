@@ -47,7 +47,7 @@ async def send_entry(
                 threat_level=e["threat_level"],
                 threat_score=e["threat_score"],
                 threat_type=e.get("threat_type"),
-                alert_fired=data.get("alert") is not None,
+                alert_fired=bool((data.get("alert") or {}).get("email_sent", False)),
             ))
     except httpx.RequestError:
         pass

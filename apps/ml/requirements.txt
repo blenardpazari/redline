@@ -2,6 +2,5 @@ scikit-learn
 pandas
 numpy
 joblib
-jupyter
 matplotlib
 seaborn
