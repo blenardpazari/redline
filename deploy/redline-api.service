@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 User=anomalies-app
-WorkingDirectory=/home/anomalies-app/htdocs/app.anomalies.com/api
-EnvironmentFile=/home/anomalies-app/htdocs/app.anomalies.com/api/.env
+WorkingDirectory=/home/anomalies-app/htdocs/app.anomalies.codes/api
+EnvironmentFile=/home/anomalies-app/htdocs/app.anomalies.codes/api/.env
 ExecStart=/usr/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=3
