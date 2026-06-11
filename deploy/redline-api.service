@@ -3,9 +3,10 @@ Description=Redline API
 After=network.target
 
 [Service]
-User=www-data
-WorkingDirectory=/var/www/redline/api
-ExecStart=uvicorn main:app --host 127.0.0.1 --port 8000
+User=anomalies-app
+WorkingDirectory=/home/anomalies-app/htdocs/app.anomalies.com/api
+EnvironmentFile=/home/anomalies-app/htdocs/app.anomalies.com/api/.env
+ExecStart=/usr/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=3
 
