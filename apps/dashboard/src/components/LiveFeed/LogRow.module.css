@@ -59,3 +59,12 @@
   text-align: right;
   font-weight: 500;
 }
+
+.ipLink {
+  cursor: pointer;
+}
+
+.ipLink:hover {
+  color: var(--text);
+  text-decoration: underline;
+}

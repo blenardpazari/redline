@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import type { LogEntry, ThreatLevel } from '../../types'
 import styles from './LogRow.module.css'
 
@@ -28,13 +29,19 @@ interface Props {
 }
 
 export default function LogRow({ entry }: Props) {
+  const navigate = useNavigate()
   const color = LEVEL_COLOR[entry.threat_level]
   return (
     <div className={styles.row}>
       <span className={styles.dot} style={{ background: color }} />
       <span className={styles.time}>{formatTime(entry.timestamp)}</span>
       <span className={styles.country}>{entry.country ?? '--'}</span>
-      <span className={styles.ip}>{maskIp(entry.ip)}</span>
+      <span
+        className={`${styles.ip} ${styles.ipLink}`}
+        onClick={() => navigate(`/ip/${entry.ip}`)}
+      >
+        {maskIp(entry.ip)}
+      </span>
       <span className={styles.method}>{entry.method}</span>
       <span className={styles.path}>{entry.path}</span>
       <span className={styles.status}>{entry.status_code}</span>

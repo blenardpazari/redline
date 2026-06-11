@@ -1,5 +1,5 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Link } from 'react-router-dom'
+import Layout from '../components/Layout/Layout'
 import styles from './Insights.module.css'
 
 const MODEL_COMPARISON = [
@@ -29,24 +29,22 @@ function ConfusionMatrix() {
       <div className={styles.matrixGrid}>
         <div />
         {CM_LABELS.map((l) => <div key={l} className={styles.matrixLabel}>{l}</div>)}
-        {CM_DATA.map((row, i) => (
-          [
-            <div key={`l${i}`} className={styles.matrixLabel}>{CM_LABELS[i]}</div>,
-            ...row.map((val, j) => (
-              <div
-                key={`${i}${j}`}
-                className={styles.matrixCell}
-                style={{
-                  background: i === j
-                    ? `rgba(34,197,94,${val / CM_MAX})`
-                    : `rgba(239,68,68,${(val / CM_MAX) * 3})`,
-                }}
-              >
-                {val}
-              </div>
-            )),
-          ]
-        ))}
+        {CM_DATA.map((row, i) => ([
+          <div key={`l${i}`} className={styles.matrixLabel}>{CM_LABELS[i]}</div>,
+          ...row.map((val, j) => (
+            <div
+              key={`${i}${j}`}
+              className={styles.matrixCell}
+              style={{
+                background: i === j
+                  ? `rgba(34,197,94,${val / CM_MAX})`
+                  : `rgba(239,68,68,${(val / CM_MAX) * 3})`,
+              }}
+            >
+              {val}
+            </div>
+          )),
+        ]))}
       </div>
     </div>
   )
@@ -54,14 +52,7 @@ function ConfusionMatrix() {
 
 export default function Insights() {
   return (
-    <div className={styles.page}>
-      <nav className={styles.nav}>
-        <span className={styles.navTitle}>Redline</span>
-        <div style={{ display: 'flex', gap: 24 }}>
-          <Link to="/" className={styles.navLink}>Dashboard</Link>
-          <Link to="/map" className={styles.navLink}>Map</Link>
-        </div>
-      </nav>
+    <Layout>
       <div className={styles.content}>
         <div className={styles.statsRow}>
           <div className={styles.stat}>
@@ -96,6 +87,6 @@ export default function Insights() {
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }

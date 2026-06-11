@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import AlertPanel from '../components/AlertPanel/AlertPanel'
+import Layout from '../components/Layout/Layout'
 import LiveFeed from '../components/LiveFeed/LiveFeed'
 import StatsBar from '../components/StatsBar/StatsBar'
 import ThreatChart from '../components/ThreatChart/ThreatChart'
@@ -29,8 +29,7 @@ function buildChartPoint(entry: LogEntry, prev: ChartDataPoint[]): ChartDataPoin
 }
 
 export default function Dashboard() {
-  const { token, logout } = useAuth()
-  const navigate = useNavigate()
+  const { token } = useAuth()
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [chartData, setChartData] = useState<ChartDataPoint[]>([])
@@ -51,27 +50,16 @@ export default function Dashboard() {
 
   useWebSocket(handleMessage, token)
 
-  function handleLogout() {
-    logout()
-    navigate('/login')
-  }
-
   return (
-    <div className={styles.page}>
-      <nav className={styles.nav}>
-        <span className={styles.navTitle}>Redline</span>
-        <div className={styles.navLinks}>
-          <Link to="/map" className={styles.navLink}>Map</Link>
-          <Link to="/insights" className={styles.navLink}>Insights</Link>
-          <button onClick={handleLogout} className={styles.navLogout}>Logout</button>
+    <Layout>
+      <div className={styles.page}>
+        <div className={styles.statsRow}><StatsBar /></div>
+        <div className={styles.main}>
+          <LiveFeed entries={entries} />
+          <AlertPanel alerts={alerts} />
         </div>
-      </nav>
-      <div className={styles.statsRow}><StatsBar /></div>
-      <div className={styles.main}>
-        <LiveFeed entries={entries} />
-        <AlertPanel alerts={alerts} />
+        <div className={styles.chartRow}><ThreatChart data={chartData} /></div>
       </div>
-      <div className={styles.chartRow}><ThreatChart data={chartData} /></div>
-    </div>
+    </Layout>
   )
 }
