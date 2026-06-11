@@ -55,3 +55,73 @@ export interface AuthToken {
 export type WebSocketMessage =
   | { type: "log_entry"; data: LogEntry }
   | { type: "alert"; data: Alert };
+
+export interface LogSearchResponse {
+  entries: LogEntry[]
+  total: number
+  page: number
+  limit: number
+}
+
+export interface IpProfile {
+  ip: string
+  country: string | null
+  total_requests: number
+  first_seen: string
+  last_seen: string
+  avg_score: number
+  max_score: number
+  threat_types: string[]
+  requests: LogEntry[]
+}
+
+export interface AnalyticsPoint {
+  label: string
+  normal: number
+  anomaly: number
+  critical: number
+}
+
+export interface AnalyticsResponse {
+  labels: string[]
+  normal: number[]
+  anomaly: number[]
+  critical: number[]
+  peak_per_minute: number
+}
+
+export type ConnectorStatus = 'active' | 'inactive' | 'unconfigured'
+
+export interface Connector {
+  id: string
+  name: string
+  source_type: string
+  description: string
+  status: ConnectorStatus
+  total_events: number
+  last_event: string | null
+}
+
+export interface AlertSettings {
+  critical_threshold: number
+  warning_threshold: number
+  cooldown_minutes: number
+  email_enabled: boolean
+  email_recipient: string
+}
+
+export interface BreakdownItem {
+  threat_type: string
+  count: number
+  percent: number
+}
+
+export interface ThreatBreakdownResponse {
+  requests_today: number
+  anomalies_today: number
+  redlines_today: number
+  breakdown: BreakdownItem[] | null
+  top_path: string | null
+  top_ip: string | null
+  busiest_hour: number | null
+}

@@ -26,5 +26,14 @@ CREATE TABLE IF NOT EXISTS alerts (
     email_sent   INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+    id                  INTEGER PRIMARY KEY DEFAULT 1,
+    critical_threshold  REAL    NOT NULL DEFAULT 85.0,
+    warning_threshold   REAL    NOT NULL DEFAULT 70.0,
+    cooldown_minutes    INTEGER NOT NULL DEFAULT 15,
+    email_enabled       INTEGER NOT NULL DEFAULT 1,
+    email_recipient     TEXT    NOT NULL DEFAULT ''
+);
+
 CREATE INDEX IF NOT EXISTS idx_log_timestamp ON log_entries(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_alerts_ip ON alerts(ip, created_at DESC);
