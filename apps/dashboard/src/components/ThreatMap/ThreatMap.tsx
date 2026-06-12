@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from 'react-leaflet'
+import { useMemo } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { LogEntry, Server, ThreatLevel } from '../../types'
 import { useTheme } from '../../context/ThemeContext'
 import { chartTheme, levelColor } from '../../lib/chartTheme'
+import ArcOverlay, { buildArcs } from './ArcOverlay'
 
 const LEVEL_RADIUS: Record<ThreatLevel, number> = {
   critical: 10, warning: 7, suspicious: 5, normal: 3,
 }
 
-const ATTACK_LEVELS = new Set<ThreatLevel>(['critical', 'warning', 'suspicious'])
+const ATTACK_LEVELS = new Set<string>(['critical', 'warning', 'suspicious'])
 
 function makeServerIcon(name: string) {
   const html = `
@@ -53,119 +54,6 @@ function makeServerIcon(name: string) {
 type GeoEntry = LogEntry & { lat: number; lon: number }
 type GeoServer = Server & { lat: number; lon: number }
 
-// ---------------------------------------------------------------------------
-// Arc animation overlay
-// ---------------------------------------------------------------------------
-
-interface Arc {
-  id: number
-  fromLat: number
-  fromLon: number
-  toLat: number
-  toLon: number
-  color: string
-  born: number
-}
-
-const ARC_DURATION = 2500  // ms for one trip
-const ARC_FADE = 4000      // ms before it disappears
-
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t }
-
-// Great-circle midpoint lifted for a visual arc
-function arcPoint(lat1: number, lon1: number, lat2: number, lon2: number, t: number) {
-  const lat = lerp(lat1, lat2, t)
-  const lon = lerp(lon1, lon2, t)
-  const lift = Math.sin(Math.PI * t) * Math.min(15, Math.abs(lat2 - lat1) + Math.abs(lon2 - lon1)) * 0.4
-  return { lat: lat + lift, lon }
-}
-
-function ArcOverlay({ arcs }: { arcs: Arc[] }) {
-  const map = useMap()
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const rafRef = useRef<number>(0)
-
-  useEffect(() => {
-    const container = map.getContainer()
-    const canvas = document.createElement('canvas')
-    canvas.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:500'
-    container.appendChild(canvas)
-    canvasRef.current = canvas
-
-    function resize() {
-      const r = container.getBoundingClientRect()
-      canvas.width = r.width
-      canvas.height = r.height
-    }
-    resize()
-    map.on('resize move zoom', resize)
-
-    return () => {
-      map.off('resize move zoom', resize)
-      canvas.remove()
-      cancelAnimationFrame(rafRef.current)
-    }
-  }, [map])
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    function draw() {
-      const ctx = canvas!.getContext('2d')
-      if (!ctx) return
-      ctx.clearRect(0, 0, canvas!.width, canvas!.height)
-
-      const now = Date.now()
-      for (const arc of arcs) {
-        const age = now - arc.born
-        if (age > ARC_FADE) continue
-
-        const opacity = age < ARC_DURATION ? 1 : 1 - (age - ARC_DURATION) / (ARC_FADE - ARC_DURATION)
-
-        // draw the static faint trail
-        ctx.beginPath()
-        ctx.globalAlpha = opacity * 0.15
-        ctx.strokeStyle = arc.color
-        ctx.lineWidth = 1
-        for (let i = 0; i <= 60; i++) {
-          const t = i / 60
-          const p = arcPoint(arc.fromLat, arc.fromLon, arc.toLat, arc.toLon, t)
-          const px = map.latLngToContainerPoint([p.lat, p.lon])
-          i === 0 ? ctx.moveTo(px.x, px.y) : ctx.lineTo(px.x, px.y)
-        }
-        ctx.stroke()
-
-        // draw the moving dot
-        if (age < ARC_DURATION) {
-          const t = age / ARC_DURATION
-          const p = arcPoint(arc.fromLat, arc.fromLon, arc.toLat, arc.toLon, t)
-          const px = map.latLngToContainerPoint([p.lat, p.lon])
-          ctx.beginPath()
-          ctx.globalAlpha = opacity
-          ctx.fillStyle = arc.color
-          ctx.shadowColor = arc.color
-          ctx.shadowBlur = 8
-          ctx.arc(px.x, px.y, 3.5, 0, Math.PI * 2)
-          ctx.fill()
-          ctx.shadowBlur = 0
-        }
-      }
-      ctx.globalAlpha = 1
-      rafRef.current = requestAnimationFrame(draw)
-    }
-
-    rafRef.current = requestAnimationFrame(draw)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [arcs, map])
-
-  return null
-}
-
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-
 interface Props {
   entries: LogEntry[]
   servers?: Server[]
@@ -186,30 +74,10 @@ export default function ThreatMap({ entries, servers = [] }: Props) {
     [servers],
   )
 
-  // Build arcs: recent attack entries → nearest server
-  const arcs = useMemo<Arc[]>(() => {
-    if (geoServers.length === 0) return []
-    const cutoff = Date.now() - ARC_FADE
-    return geoEntries
-      .filter(e => ATTACK_LEVELS.has(e.threat_level) && new Date(e.timestamp).getTime() > cutoff)
-      .map(e => {
-        // pick closest server by simple distance
-        const srv = geoServers.reduce((best, s) => {
-          const d = Math.hypot(s.lat - e.lat, s.lon - e.lon)
-          const bd = Math.hypot(best.lat - e.lat, best.lon - e.lon)
-          return d < bd ? s : best
-        })
-        return {
-          id: e.id,
-          fromLat: e.lat,
-          fromLon: e.lon,
-          toLat: srv.lat,
-          toLon: srv.lon,
-          color: levelColor(t, e.threat_level),
-          born: new Date(e.timestamp).getTime(),
-        }
-      })
-  }, [geoEntries, geoServers, t])
+  const arcs = useMemo(
+    () => buildArcs(geoEntries, geoServers, (level) => levelColor(t, level as ThreatLevel), ATTACK_LEVELS),
+    [geoEntries, geoServers, t],
+  )
 
   return (
     <MapContainer
@@ -229,7 +97,6 @@ export default function ThreatMap({ entries, servers = [] }: Props) {
 
       <ArcOverlay arcs={arcs} />
 
-      {/* Attacker dots */}
       {geoEntries.map((entry) => {
         const color = levelColor(t, entry.threat_level)
         return (
@@ -262,7 +129,6 @@ export default function ThreatMap({ entries, servers = [] }: Props) {
         )
       })}
 
-      {/* Server / datacenter markers */}
       {geoServers.map(s => (
         <Marker
           key={`srv-${s.id}`}

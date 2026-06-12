@@ -170,7 +170,7 @@ export default function Dashboard() {
         ))}
       </div>
     ),
-    map: <MiniMap entries={entries} />,
+    map: <MiniMap entries={entries} servers={servers} />,
   }
 
   return (
