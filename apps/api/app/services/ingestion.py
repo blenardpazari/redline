@@ -29,13 +29,15 @@ _RULES: list[tuple[re.Pattern, str, float]] = [
 _DDOS_RPM_THRESHOLD = 30.0
 
 _STATIC_EXT = re.compile(
-    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|mp4|webm|ogg|zip|gz|br)(\?.*)?$",
+    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|avif|svg|ico|woff|woff2|ttf|eot|otf|mp4|webm|ogg|zip|gz|br)(\?.*)?$",
     re.I,
 )
+_STATIC_PREFIXES = ("/uploads/", "/app/uploads/", "/static/", "/assets/", "/media/", "/api/")
 
 
 def is_static(path: str) -> bool:
-    return bool(_STATIC_EXT.search(path.split("?")[0]))
+    base = path.split("?")[0]
+    return bool(_STATIC_EXT.search(base)) or any(base.startswith(p) for p in _STATIC_PREFIXES)
 
 
 def _path_base(path: str) -> str:

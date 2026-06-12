@@ -101,10 +101,11 @@ _PRIVATE = ("127.", "10.", "192.168.", "::1", "172.16.", "172.17.", "172.18.",
             "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.",
             "172.31.")
 _STATIC_RE = re.compile(
-    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|svg|ico"
+    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|avif|svg|ico"
     r"|woff|woff2|ttf|eot|otf|mp4|webm|ogg|zip|gz|br)(\?[^\s\"]*)?$",
     re.I,
 )
+_STATIC_PREFIXES = ("/uploads/", "/app/uploads/", "/static/", "/assets/", "/media/", "/api/")
 
 
 def parse_nginx(line):
@@ -115,7 +116,8 @@ def parse_nginx(line):
     if real_ip.startswith(_PRIVATE):
         return None
     path = m.group("path")
-    if _STATIC_RE.search(path.split("?")[0]):
+    base = path.split("?")[0]
+    if _STATIC_RE.search(base) or any(base.startswith(p) for p in _STATIC_PREFIXES):
         return None
     try:
         dt = datetime.strptime(m.group("time"), _TIME_FMT).astimezone(timezone.utc)
