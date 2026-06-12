@@ -201,27 +201,16 @@ export default function Insights() {
 
   async function handleRetrain() {
     setRetraining(true)
-    setRetrainMsg('Training started...')
+    setRetrainMsg('Training...')
     try {
-      await api.post('/insights/retrain', {})
-      const poll = setInterval(async () => {
-        try {
-          const s = await api.get<{ running: boolean; last_exit: number | null }>('/insights/retrain/status')
-          if (!s.running) {
-            clearInterval(poll)
-            setRetraining(false)
-            if (s.last_exit === 0) {
-              setRetrainMsg('Retrain complete ✓')
-              loadData()
-            } else {
-              setRetrainMsg(`Retrain failed (exit ${s.last_exit})`)
-            }
-          }
-        } catch { clearInterval(poll); setRetraining(false) }
-      }, 2000)
-    } catch {
+      const res = await api.post<{ samples: number; trained_at: string }>('/insights/retrain', {})
+      setRetrainMsg(`Retrain complete ✓ — ${res.samples.toLocaleString()} samples`)
+      loadData()
+    } catch (e: unknown) {
+      const msg = (e as { detail?: string })?.detail ?? 'Failed to retrain'
+      setRetrainMsg(msg)
+    } finally {
       setRetraining(false)
-      setRetrainMsg('Failed to start retrain')
     }
   }
 
