@@ -85,7 +85,7 @@ def get_server_by_api_key(api_key: str) -> dict | None:
 
 def update_server(server_id: int, data: dict) -> dict | None:
     conn = get_connection()
-    allowed = {"name", "env", "source_type"}
+    allowed = {"name", "env", "source_type", "public_ip", "lat", "lon", "city", "country"}
     fields = {k: v for k, v in data.items() if k in allowed}
     if not fields:
         return get_server_by_id(server_id)
