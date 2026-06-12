@@ -13,6 +13,7 @@ from app.routes.auth import router as auth_router
 from app.routes.health import router as health_router
 from app.routes.clustering import router as clustering_router
 from app.routes.explain import router as explain_router
+from app.routes.train import router as train_router
 from app.routes.insights import router as insights_router
 from app.routes.ingest import router as ingest_router
 from app.routes.ip_inspector import router as ip_router
@@ -42,8 +43,7 @@ async def _retention_loop(retention_days: int) -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cfg = get_config()
     get_connection()
-    models = load_models(cfg.ml_artifacts_path)
-    app.state.models = models
+    app.state.models = load_models(cfg.ml_artifacts_path)
     retention_task = asyncio.create_task(_retention_loop(cfg.log_retention_days))
     try:
         yield
@@ -82,4 +82,5 @@ app.include_router(health_router)
 app.include_router(insights_router)
 app.include_router(clustering_router)
 app.include_router(explain_router)
+app.include_router(train_router)
 app.include_router(ws_router)

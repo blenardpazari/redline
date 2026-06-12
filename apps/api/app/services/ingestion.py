@@ -4,7 +4,7 @@ from datetime import datetime
 from app.db.queries import LogEntryInsert, count_recent_requests
 from app.services.geoip import lookup as geoip_lookup
 from app.services.scorer import ScorerInput, ScorerModels, score
-from app.types.models import ThreatScore
+from app.types.models import ThreatLevel, ThreatScore
 
 _KNOWN_ATTACK_PATHS = frozenset({
     "/.env", "/.git/config", "/wp-admin", "/phpmyadmin", "/phpinfo.php",
@@ -18,7 +18,20 @@ def _path_base(path: str) -> str:
     return path.split("?")[0]
 
 
-def parse_and_score(raw: str, models: ScorerModels) -> tuple[LogEntryInsert, ThreatScore]:
+def _fallback_score(scorer_input: ScorerInput) -> ThreatScore:
+    is_attack = scorer_input["is_known_attack_path"] or scorer_input["status_code"] >= 400
+    level: ThreatLevel = "suspicious" if is_attack else "normal"
+    score_val = 60.0 if is_attack else 0.0
+    return ThreatScore(
+        anomaly_score=score_val,
+        classifier_confidence=0.0,
+        threat_type="UNKNOWN" if is_attack else "NORMAL",
+        final_score=score_val,
+        threat_level=level,
+    )
+
+
+def parse_and_score(raw: str, models: ScorerModels | None) -> tuple[LogEntryInsert, ThreatScore]:
     data: dict = json.loads(raw)
 
     timestamp: str = data["timestamp"]
@@ -37,7 +50,7 @@ def parse_and_score(raw: str, models: ScorerModels) -> tuple[LogEntryInsert, Thr
         requests_per_minute=recent_count / 5.0,
     )
 
-    threat = score(models, scorer_input)
+    threat = score(models, scorer_input) if models is not None else _fallback_score(scorer_input)
 
     country = data.get("country")
     lat = data.get("lat")
