@@ -16,7 +16,7 @@ interface Props {
   allowHTML?: boolean
 }
 
-export default function Select({ value, onChange, options, id, icon, allowHTML }: Props) {
+export default function Select({ value, onChange, options, className, id, icon, allowHTML }: Props) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -33,10 +33,9 @@ export default function Select({ value, onChange, options, id, icon, allowHTML }
   }, [open])
 
   return (
-    <div ref={containerRef} className="choices relative inline-block" id={id}>
-      {/* Trigger */}
+    <div ref={containerRef} className={`choices relative inline-flex shrink-0 ${className ?? 'w-40'}`} id={id}>
       <div
-        className="choices__inner flex cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2 text-[13px] text-fg transition-colors hover:border-border-strong"
+        className="choices__inner flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 text-[13px] text-fg transition-colors hover:border-border-strong"
         style={icon ? { paddingLeft: '26px' } : undefined}
         onClick={() => setOpen(o => !o)}
       >
@@ -57,7 +56,6 @@ export default function Select({ value, onChange, options, id, icon, allowHTML }
         </svg>
       </div>
 
-      {/* Dropdown */}
       {open && (
         <div className="choices__list choices__list--dropdown is-active absolute left-0 top-full z-[200] mt-1 min-w-full rounded-lg border border-border bg-surface shadow-lg">
           {options.map(o => (

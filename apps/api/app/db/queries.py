@@ -1,3 +1,4 @@
+import sqlite3
 from typing import TypedDict
 from app.db.connection import get_connection
 from app.types.models import Alert, LogEntry
@@ -72,10 +73,13 @@ def insert_log_entry(entry: LogEntryInsert) -> int:
     return cursor.lastrowid
 
 
-def get_log_entries(limit: int, offset: int, server_id: int | None = None) -> list[LogEntry]:
+def get_log_entries(limit: int, offset: int, server_id: int | None = None, hours: int | None = None) -> list[LogEntry]:
     conn = get_connection()
     clause, params = _server_filter(server_id)
-    where = f"WHERE {clause}" if clause else ""
+    conditions = [clause] if clause else []
+    if hours is not None:
+        conditions.append(f"timestamp >= datetime('now', '-{hours} hours')")
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     cursor = conn.execute(
         f"""
         SELECT id, timestamp, ip, country, lat, lon, method, path,
@@ -397,3 +401,62 @@ def check_alert_cooldown(ip: str, cooldown_minutes: int) -> bool:
     )
     count: int = cursor.fetchone()[0]
     return count > 0
+
+
+# ---------------------------------------------------------------------------
+# Connectors
+# ---------------------------------------------------------------------------
+
+import json as _json
+from datetime import datetime as _dt, timezone as _tz
+
+
+def list_connectors() -> list[dict]:
+    conn = get_connection()
+    rows = conn.execute("SELECT * FROM connectors ORDER BY id").fetchall()
+    return [_connector_row(r) for r in rows]
+
+
+def get_connector(connector_id: int) -> dict | None:
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM connectors WHERE id = ?", (connector_id,)).fetchone()
+    return _connector_row(row) if row else None
+
+
+def insert_connector(name: str, type_: str, config: dict, enabled: bool = True) -> dict:
+    conn = get_connection()
+    now = _dt.now(_tz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    cur = conn.execute(
+        "INSERT INTO connectors (name, type, config, enabled, created_at) VALUES (?, ?, ?, ?, ?)",
+        (name, type_, _json.dumps(config), int(enabled), now),
+    )
+    conn.commit()
+    return get_connector(cur.lastrowid)  # type: ignore[arg-type]
+
+
+def update_connector(connector_id: int, name: str, type_: str, config: dict, enabled: bool) -> dict | None:
+    conn = get_connection()
+    conn.execute(
+        "UPDATE connectors SET name=?, type=?, config=?, enabled=? WHERE id=?",
+        (name, type_, _json.dumps(config), int(enabled), connector_id),
+    )
+    conn.commit()
+    return get_connector(connector_id)
+
+
+def delete_connector(connector_id: int) -> bool:
+    conn = get_connection()
+    rows = conn.execute("DELETE FROM connectors WHERE id = ?", (connector_id,)).rowcount
+    conn.commit()
+    return rows > 0
+
+
+def _connector_row(row: sqlite3.Row) -> dict:  # type: ignore[name-defined]
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "type": row["type"],
+        "config": _json.loads(row["config"]),
+        "enabled": bool(row["enabled"]),
+        "created_at": row["created_at"],
+    }

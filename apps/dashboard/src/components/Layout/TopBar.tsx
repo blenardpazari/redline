@@ -71,7 +71,7 @@ export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
         <Select
           value={String(selectedServerId ?? '')}
           onChange={(v) => setSelectedServerId(v === '' ? null : Number(v))}
-          className="h-9 rounded-md border border-border bg-surface text-[13px] font-medium text-fg outline-none"
+          className="w-48"
           icon={<IconServer size={13} />}
           allowHTML
           options={[

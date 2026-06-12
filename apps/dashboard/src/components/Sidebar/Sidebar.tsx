@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   IconActivity, IconBell, IconChart, IconGlobe, IconGrid, IconList,
-  IconServer, IconSettings, IconShield, IconSparkles, IconUsers,
+  IconPlug, IconServer, IconSettings, IconShield, IconSparkles, IconUsers,
 } from '../ui/icons'
 
 function IconCluster({ size = 16 }: { size?: number }) {
@@ -49,9 +49,10 @@ const NAV = [
   {
     section: 'Admin',
     items: [
-      { label: 'Settings',   to: '/settings',   Icon: IconSettings },
-      { label: 'Users',      to: '/users',      Icon: IconUsers },
-      { label: 'System',     to: '/health',     Icon: IconActivity },
+      { label: 'Settings',    to: '/settings',    Icon: IconSettings },
+      { label: 'Connectors',  to: '/connectors',  Icon: IconPlug },
+      { label: 'Users',       to: '/users',       Icon: IconUsers },
+      { label: 'System',      to: '/health',      Icon: IconActivity },
     ],
   },
 ]

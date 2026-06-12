@@ -55,13 +55,13 @@ export default function FilterBar({ filters, onChange }: Props) {
         />
       </div>
       <Select
-        className={inputCls}
+        className="w-36"
         value={filters.threatLevel}
         onChange={(v) => set('threatLevel', v)}
         options={LEVEL_OPTIONS}
       />
       <Select
-        className={inputCls}
+        className="w-32"
         value={filters.status}
         onChange={(v) => set('status', v)}
         options={STATUS_OPTIONS}

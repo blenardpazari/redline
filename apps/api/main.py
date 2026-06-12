@@ -22,6 +22,7 @@ from app.routes.logs import router as logs_router
 from app.routes.servers import router as servers_router
 from app.routes.stats import router as stats_router
 from app.routes.users import router as users_router
+from app.routes.connectors import router as connectors_router
 from app.db.queries import purge_old_entries
 from app.services.scorer import load_models
 from config import get_config
@@ -83,4 +84,5 @@ app.include_router(insights_router)
 app.include_router(clustering_router)
 app.include_router(explain_router)
 app.include_router(train_router)
+app.include_router(connectors_router)
 app.include_router(ws_router)

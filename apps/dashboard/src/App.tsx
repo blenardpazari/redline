@@ -16,6 +16,7 @@ import Sites from './pages/Sites'
 import ThreatBreakdown from './pages/ThreatBreakdown'
 import ThreatMap from './pages/ThreatMap'
 import Users from './pages/Users'
+import Connectors from './pages/Connectors'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated()) return <Navigate to="/login" replace />
@@ -45,7 +46,8 @@ export default function App() {
             <Route path="/sites"     element={<Protected><Sites /></Protected>} />
             <Route path="/alerts"    element={<Protected><AlertHistory /></Protected>} />
             <Route path="/users"     element={<Protected><Users /></Protected>} />
-            <Route path="/health"    element={<Protected><Health /></Protected>} />
+            <Route path="/health"      element={<Protected><Health /></Protected>} />
+            <Route path="/connectors" element={<Protected><Connectors /></Protected>} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </ServerProvider>

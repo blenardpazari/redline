@@ -96,7 +96,7 @@ body {
 
 
 /* Reset anything Choices might inject via JS */
-.choices { position: relative; margin-bottom: 0; display: block; width: 100%; }
+.choices { position: relative; margin-bottom: 0; display: inline-flex; }
 .choices:focus { outline: none; }
 .choices [hidden] { display: none; }
 .choices, .choices * { cursor: pointer; }

@@ -65,4 +65,18 @@ def _migrate(conn: sqlite3.Connection) -> None:
 
     conn.execute("CREATE INDEX IF NOT EXISTS idx_log_server ON log_entries(server_id, timestamp DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_alerts_server ON alerts(server_id, created_at DESC)")
+
+    all_tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    if "connectors" not in all_tables:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS connectors (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                name       TEXT NOT NULL,
+                type       TEXT NOT NULL,
+                config     TEXT NOT NULL DEFAULT '{}',
+                enabled    INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL
+            )
+        """)
+
     conn.commit()

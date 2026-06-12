@@ -113,3 +113,7 @@ export const IconCheck = (p: IconProps) => (
 export const IconTrash = (p: IconProps) => (
   <Svg {...p}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></Svg>
 )
+
+export const IconPlug = (p: IconProps) => (
+  <Svg {...p}><path d="M12 22v-5" /><path d="M9 8V2" /><path d="M15 8V2" /><path d="M18 8H6a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2z" /><path d="M12 17a3 3 0 0 0 3-3v-1H9v1a3 3 0 0 0 3 3z" /></Svg>
+)

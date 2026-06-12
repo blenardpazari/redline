@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from app.db.queries import AlertInsert, check_alert_cooldown, get_effective_settings, insert_alert
 from app.services.email_sender import send_critical_alert
+from app.services.notify import fire_connectors
 from app.types.models import Alert, ThreatScore
 from config import AppConfig
 
@@ -51,6 +52,15 @@ def process(
             timestamp=now,
             recipient=recipient,
         )
+
+    fire_connectors(
+        ip=ip,
+        country=country,
+        threat_type=threat.threat_type,
+        score=threat.final_score,
+        path=path,
+        timestamp=now,
+    )
 
     return Alert(
         id=alert_id,
