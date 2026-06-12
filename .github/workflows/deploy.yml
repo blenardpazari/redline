@@ -66,9 +66,9 @@ jobs:
             cd ${{ secrets.VPS_API_PATH }}
             python3 -m venv .venv
             .venv/bin/pip install -r requirements.txt --quiet
-            mkdir -p ~/.config/systemd/user
-            cp ${{ secrets.VPS_API_PATH }}/redline-api.service ~/.config/systemd/user/redline-api.service
-            systemctl --user daemon-reload
-            systemctl --user enable redline-api
-            systemctl --user restart redline-api
-            systemctl --user is-active redline-api
+            mkdir -p /home/${{ secrets.VPS_USER }}/.config/systemd/user
+            cp ${{ secrets.VPS_API_PATH }}/redline-api.service /home/${{ secrets.VPS_USER }}/.config/systemd/user/redline-api.service
+            systemctl --user -M ${{ secrets.VPS_USER }}@ daemon-reload
+            systemctl --user -M ${{ secrets.VPS_USER }}@ enable redline-api
+            systemctl --user -M ${{ secrets.VPS_USER }}@ restart redline-api
+            systemctl --user -M ${{ secrets.VPS_USER }}@ is-active redline-api
