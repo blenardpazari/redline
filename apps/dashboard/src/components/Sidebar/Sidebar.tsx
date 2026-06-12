@@ -50,7 +50,7 @@ const NAV = [
     section: 'Admin',
     items: [
       { label: 'Settings',    to: '/settings',    Icon: IconSettings },
-      { label: 'Connectors',  to: '/connectors',  Icon: IconPlug },
+      { label: 'Integrations', to: '/integrations', Icon: IconPlug },
       { label: 'Users',       to: '/users',       Icon: IconUsers },
       { label: 'System',      to: '/health',      Icon: IconActivity },
     ],

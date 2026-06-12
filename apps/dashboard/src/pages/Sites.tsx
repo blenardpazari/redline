@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout/Layout'
 import { IconCheck, IconCopy, IconPlus, IconServer } from '../components/ui/icons'
+import { SERVER_TYPE_LOGO } from '../components/ui/ServerTypeLogos'
 import Select from '../components/ui/Select'
 import { api } from '../lib/api'
 import { useServer } from '../context/ServerContext'
@@ -9,6 +10,15 @@ import type { Server, ServerEnv } from '../types'
 const ENVS: { value: ServerEnv; label: string }[] = [
   { value: 'production', label: 'Production' },
   { value: 'staging',    label: 'Staging' },
+]
+
+const SOURCE_TYPES: { value: string; label: string; description: string }[] = [
+  { value: 'cloudpanel', label: 'CloudPanel',             description: 'CloudPanel VPS with nginx' },
+  { value: 'nginx',      label: 'Nginx (Linux VPS)',       description: 'Any Linux server running nginx' },
+  { value: 'apache',     label: 'Apache',                  description: 'Apache httpd access logs' },
+  { value: 'gce',        label: 'Google Compute Engine',   description: 'GCE VM instance' },
+  { value: 'aws',        label: 'AWS EC2',                 description: 'Amazon EC2 instance' },
+  { value: 'docker',     label: 'Docker',                  description: 'Containerised web server' },
 ]
 
 const inputCls =
@@ -24,7 +34,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-2xl"
+        className="w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <h2 className="mb-4 text-base font-semibold">{title}</h2>
@@ -127,6 +137,32 @@ export default function Sites() {
                 Name
                 <input className={`${inputCls} mt-1`} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. mysite.com" />
               </label>
+              <div>
+                <p className="mb-1.5 text-sm text-muted">Server type</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {SOURCE_TYPES.map(t => {
+                    const Logo = SERVER_TYPE_LOGO[t.value]
+                    return (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, source_type: t.value }))}
+                        className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors ${
+                          form.source_type === t.value
+                            ? 'border-accent bg-accent/10'
+                            : 'border-border bg-surface-2 hover:border-border-strong'
+                        }`}
+                      >
+                        {Logo && <Logo size={26} />}
+                        <div>
+                          <div className={`text-xs font-medium ${form.source_type === t.value ? 'text-accent' : 'text-fg'}`}>{t.label}</div>
+                          <div className="mt-0.5 text-[11px] text-dim">{t.description}</div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
               <label className="block text-sm text-muted">
                 Environment
                 <Select
@@ -179,8 +215,11 @@ export default function Sites() {
                 <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
                   {/* Name + icon */}
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-muted">
-                      <IconServer size={18} />
+                    <div className="shrink-0">
+                      {SERVER_TYPE_LOGO[server.source_type]
+                        ? (() => { const Logo = SERVER_TYPE_LOGO[server.source_type]; return <Logo size={36} /> })()
+                        : <div className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-2 text-muted"><IconServer size={18} /></div>
+                      }
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{server.name}</div>

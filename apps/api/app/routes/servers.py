@@ -14,7 +14,7 @@ from auth.jwt_handler import require_admin, require_auth
 
 router = APIRouter(prefix="/servers", tags=["servers"])
 
-_SOURCE_TYPES = {"cloudpanel"}
+_SOURCE_TYPES = {"cloudpanel", "nginx", "apache", "gce", "aws", "docker"}
 _ENVS = {"production", "staging", "dev"}
 
 _SETUP_INSTRUCTIONS: dict[str, dict] = {
@@ -22,11 +22,74 @@ _SETUP_INSTRUCTIONS: dict[str, dict] = {
         "title": "CloudPanel Agent Setup",
         "steps": [
             "1. SSH into your CloudPanel server.",
-            "2. Copy redline-agent.py to the server (e.g. /root/redline-agent.py).",
-            "3. Find your log paths:",
-            "ls /home/*/logs/nginx/",
-            "4. Run the agent:",
-            "nohup env REDLINE_URL=https://your-redline-host REDLINE_KEY={api_key} python3 /root/redline-agent.py > /var/log/redline-agent.log 2>&1 &",
+            "2. Download the agent:",
+            "curl -o /root/redline-agent.sh https://your-redline-host/agent/redline-agent.sh && chmod +x /root/redline-agent.sh",
+            "3. Install as a systemd service:",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} /root/redline-agent.sh install",
+            "4. Verify it's running:",
+            "systemctl status redline-agent",
+        ],
+    },
+    "nginx": {
+        "title": "Nginx (Linux VPS) Agent Setup",
+        "steps": [
+            "1. SSH into your server.",
+            "2. Download the agent:",
+            "curl -o /root/redline-agent.sh https://your-redline-host/agent/redline-agent.sh && chmod +x /root/redline-agent.sh",
+            "3. Set your log glob and install:",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} CLOUDPANEL_LOG_GLOB=/var/log/nginx/access.log /root/redline-agent.sh install",
+            "4. Verify:",
+            "systemctl status redline-agent",
+        ],
+    },
+    "apache": {
+        "title": "Apache Agent Setup",
+        "steps": [
+            "1. SSH into your server.",
+            "2. Download the agent:",
+            "curl -o /root/redline-agent.sh https://your-redline-host/agent/redline-agent.sh && chmod +x /root/redline-agent.sh",
+            "3. Set your log glob and install:",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} CLOUDPANEL_LOG_GLOB=/var/log/apache2/access*.log /root/redline-agent.sh install",
+            "4. Verify:",
+            "systemctl status redline-agent",
+        ],
+    },
+    "gce": {
+        "title": "Google Compute Engine Agent Setup",
+        "steps": [
+            "1. SSH into your GCE instance via the console or gcloud:",
+            "gcloud compute ssh INSTANCE_NAME --zone=ZONE",
+            "2. Download the agent:",
+            "curl -o /root/redline-agent.sh https://your-redline-host/agent/redline-agent.sh && chmod +x /root/redline-agent.sh",
+            "3. Install (adjust log path to match your web server):",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} CLOUDPANEL_LOG_GLOB=/var/log/nginx/access.log /root/redline-agent.sh install",
+            "4. Allow outbound HTTPS in your firewall rules if needed, then verify:",
+            "systemctl status redline-agent",
+        ],
+    },
+    "aws": {
+        "title": "AWS EC2 Agent Setup",
+        "steps": [
+            "1. SSH into your EC2 instance:",
+            "ssh -i your-key.pem ec2-user@YOUR_PUBLIC_IP",
+            "2. Download the agent:",
+            "curl -o /root/redline-agent.sh https://your-redline-host/agent/redline-agent.sh && chmod +x /root/redline-agent.sh",
+            "3. Install (adjust log path for your distro — Amazon Linux uses /var/log/nginx/):",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} CLOUDPANEL_LOG_GLOB=/var/log/nginx/access.log /root/redline-agent.sh install",
+            "4. Make sure your Security Group allows outbound HTTPS, then verify:",
+            "systemctl status redline-agent",
+        ],
+    },
+    "docker": {
+        "title": "Docker Agent Setup",
+        "steps": [
+            "1. Mount your container log directory into the agent container.",
+            "2. Run the agent as a sidecar:",
+            "docker run -d --name redline-agent -v /var/log/nginx:/logs -e REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} -e CLOUDPANEL_LOG_GLOB=/logs/access.log ghcr.io/your-org/redline-agent:latest",
+            "3. Or add to docker-compose.yml:",
+            "*.log path: /logs/access.log",
+            "4. To run without Docker image, copy the agent script and run with Python 3.10+:",
+            "REDLINE_WEBHOOK_URL=https://your-redline-host/api/ingest/webhook/{api_key} CLOUDPANEL_LOG_GLOB=/logs/access.log python3 redline-agent.sh run",
         ],
     },
 }

@@ -156,8 +156,8 @@ export default function ConnectorsPage() {
       <div className="max-w-2xl space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">Connectors</h1>
-            <p className="text-sm text-muted">Send alerts to Slack, Telegram, Discord, or custom webhooks</p>
+            <h1 className="text-xl font-semibold tracking-tight">Integrations</h1>
+            <p className="text-sm text-muted">Send alerts to Slack, Telegram, Discord, email, or custom webhooks</p>
           </div>
           {!showForm && (
             <button
@@ -165,14 +165,14 @@ export default function ConnectorsPage() {
               className="flex items-center gap-1.5 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
             >
               <IconPlus size={14} />
-              Add connector
+              Add integration
             </button>
           )}
         </div>
 
         {showForm && (
           <div className="rounded-lg border border-border bg-surface p-5 shadow-sm space-y-4">
-            <h2 className="text-sm font-semibold">New connector</h2>
+            <h2 className="text-sm font-semibold">New integration</h2>
 
             <div>
               <label className="mb-1.5 block text-xs text-muted">Name</label>
@@ -246,8 +246,8 @@ export default function ConnectorsPage() {
 
         {connectors.length === 0 && !showForm ? (
           <div className="rounded-lg border border-border bg-surface p-10 text-center">
-            <p className="text-sm text-dim">No connectors configured yet.</p>
-            <p className="mt-1 text-xs text-dim">Add one to receive alerts in Slack, Telegram, Discord, or a custom webhook.</p>
+            <p className="text-sm text-dim">No integrations configured yet.</p>
+            <p className="mt-1 text-xs text-dim">Add one to receive alerts in Slack, Telegram, Discord, email, or a custom webhook.</p>
           </div>
         ) : (
           <div className="space-y-2">
