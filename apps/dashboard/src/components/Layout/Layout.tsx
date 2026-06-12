@@ -19,6 +19,15 @@ export default function Layout({ children, full = false }: Props) {
       <div className="flex min-h-screen flex-col md:pl-60">
         <TopBar onMenuOpen={() => setMobileOpen(true)} />
         <main className={full ? 'relative flex-1' : 'flex-1 p-4 md:p-6'}>{children}</main>
+        {!full && (
+          <footer className="px-4 py-3 md:px-6 border-t border-border/40">
+            <p className="text-[11px] text-dim">
+              Redline v0.1 · Built by{' '}
+              <span className="text-muted">Blenard Pazari</span>
+              {' '}· © {new Date().getFullYear()} Anomalies
+            </p>
+          </footer>
+        )}
       </div>
 
       {/* Floating simulator trigger */}
