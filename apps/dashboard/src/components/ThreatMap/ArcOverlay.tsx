@@ -24,7 +24,7 @@ export function arcPoint(lat1: number, lon1: number, lat2: number, lon2: number,
 }
 
 export function buildArcs(
-  geoEntries: { id: number; lat: number; lon: number; threat_level: string; timestamp: string }[],
+  geoEntries: { id: number; lat: number; lon: number; threat_level: string; timestamp: string; _receivedAt?: number }[],
   geoServers: { id: number; lat: number; lon: number }[],
   getColor: (level: string) => string,
   attackLevels: Set<string>,
@@ -32,8 +32,12 @@ export function buildArcs(
   if (geoServers.length === 0) return []
   const cutoff = Date.now() - ARC_FADE
   return geoEntries
-    .filter(e => attackLevels.has(e.threat_level) && new Date(e.timestamp).getTime() > cutoff)
+    .filter(e => {
+      const born = e._receivedAt ?? new Date(e.timestamp).getTime()
+      return attackLevels.has(e.threat_level) && born > cutoff
+    })
     .map(e => {
+      const born = e._receivedAt ?? new Date(e.timestamp).getTime()
       const srv = geoServers.reduce((best, s) => {
         return Math.hypot(s.lat - e.lat, s.lon - e.lon) < Math.hypot(best.lat - e.lat, best.lon - e.lon) ? s : best
       })
@@ -44,7 +48,7 @@ export function buildArcs(
         toLat: srv.lat,
         toLon: srv.lon,
         color: getColor(e.threat_level),
-        born: new Date(e.timestamp).getTime(),
+        born,
       }
     })
 }

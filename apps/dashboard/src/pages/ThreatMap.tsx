@@ -52,7 +52,7 @@ export default function ThreatMap() {
 
   const handleMessage = useCallback((msg: WebSocketMessage) => {
     if (msg.type === 'log_entry' && msg.data.lat !== null && msg.data.lon !== null) {
-      setAllLive(prev => [msg.data, ...prev].slice(0, 2000))
+      setAllLive(prev => [{ ...msg.data, _receivedAt: Date.now() }, ...prev].slice(0, 2000))
     }
   }, [])
 
