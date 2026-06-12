@@ -8,7 +8,7 @@ interface Props {
 
 export default function AlertPanel({ alerts, bare }: Props) {
   const inner = (
-    <div className="max-h-[420px] flex-1 space-y-2 overflow-y-auto p-3">
+    <div className="h-80 space-y-2 overflow-y-auto p-3">
       {alerts.length === 0 ? (
         <p className="py-6 text-center text-sm text-dim">No active alerts</p>
       ) : (

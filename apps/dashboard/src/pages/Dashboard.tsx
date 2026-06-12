@@ -129,7 +129,7 @@ export default function Dashboard() {
       </div>
     ),
     attackers: (
-      <div className="divide-y divide-border/60">
+      <div className="h-80 overflow-y-auto divide-y divide-border/60">
         {topAttackers.length === 0 ? (
           <p className="px-4 py-6 text-center text-sm text-dim">No attackers detected yet</p>
         ) : topAttackers.map((a, i) => (

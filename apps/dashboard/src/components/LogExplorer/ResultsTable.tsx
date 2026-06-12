@@ -22,7 +22,7 @@ function fmtTime(ts: string) {
   return new Date(ts).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-const GRID = 'grid grid-cols-[90px_120px_70px_1fr_70px_60px_100px_32px] gap-2 px-4'
+const GRID = 'grid grid-cols-[90px_120px_70px_1fr_70px_60px_100px_80px] gap-2 px-4'
 
 export default function ResultsTable({ entries, total, page, limit, sort, order, onSort, onPage }: Props) {
   const navigate = useNavigate()
@@ -58,7 +58,7 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
         <p className="px-4 py-8 text-center text-sm text-dim">No matching entries</p>
       )}
       {entries.map((e) => (
-        <div key={e.id} className={`${GRID} items-center border-b border-border/60 py-1.5 font-mono text-xs ${LEVEL_ROW_CLASS[e.threat_level]}`}>
+        <div key={e.id} className={`group ${GRID} items-center border-b border-border/60 py-1.5 font-mono text-xs ${LEVEL_ROW_CLASS[e.threat_level]}`}>
           <span className="text-dim">{fmtTime(e.timestamp)}</span>
           <span
             className="cursor-pointer text-fg underline-offset-2 hover:text-accent hover:underline"
@@ -72,13 +72,13 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
           <span className={`font-medium ${LEVEL_TEXT_CLASS[e.threat_level]}`}>{e.threat_score.toFixed(1)}</span>
           <span className="text-muted">{e.threat_level}</span>
           <button
-            title="Explain this decision"
             onClick={() => setExplainId(e.id)}
-            className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-dim transition-colors hover:bg-surface-2 hover:text-accent"
+            className="cursor-pointer flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-0.5 text-[11px] font-sans font-medium text-muted transition-colors hover:border-accent hover:bg-accent/10 hover:text-accent"
           >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <svg className="h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
             </svg>
+            Why?
           </button>
         </div>
       ))}

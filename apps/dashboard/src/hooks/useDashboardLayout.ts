@@ -16,7 +16,7 @@ export const WIDGET_LABELS: Record<WidgetId, string> = {
   chart:     'Threat Chart',
   attackers: 'Top Attackers',
   sites:     'Sites',
-  map:       'Mini Map',
+  map:       'Live Map',
 }
 
 // full = spans both columns, half = one column
@@ -26,18 +26,18 @@ export const WIDGET_SPAN: Record<WidgetId, 'full' | 'half'> = {
   alerts:    'half',
   chart:     'full',
   attackers: 'half',
-  sites:     'half',
-  map:       'full',
+  sites:     'full',
+  map:       'half',
 }
 
 const DEFAULT_ORDER: WidgetId[] = [
   'stats',
+  'map',
   'live_feed',
-  'alerts',
   'chart',
   'attackers',
+  'alerts',
   'sites',
-  'map',
 ]
 
 const STORAGE_KEY = 'redline_dashboard_layout'

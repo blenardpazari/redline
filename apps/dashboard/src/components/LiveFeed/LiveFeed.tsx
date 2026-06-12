@@ -21,7 +21,7 @@ export default function LiveFeed({ entries, bare }: Props) {
           <span className="rounded-full bg-surface-2 px-2 py-0.5 font-mono text-xs text-muted">{entries.length}</span>
         </div>
       )}
-      <div className="max-h-[420px] flex-1 overflow-y-auto">
+      <div className="h-80 overflow-y-auto">
         {entries.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-dim">Waiting for events…</p>
         ) : (

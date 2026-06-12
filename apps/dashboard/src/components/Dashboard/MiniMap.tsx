@@ -26,7 +26,7 @@ export default function MiniMap({ entries }: Props) {
   )
 
   return (
-    <div className="h-64 w-full overflow-hidden rounded-b-lg">
+    <div className="h-80 w-full overflow-hidden rounded-b-lg">
       <MapContainer
         center={[20, 0]}
         zoom={2}
