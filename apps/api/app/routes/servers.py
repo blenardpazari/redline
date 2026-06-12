@@ -10,6 +10,7 @@ from app.db.server_queries import (
     rotate_server_key,
     update_server,
 )
+from app.services.geoip import lookup as geoip_lookup
 from auth.jwt_handler import require_admin, require_auth
 
 router = APIRouter(prefix="/servers", tags=["servers"])
@@ -99,17 +100,26 @@ class ServerCreate(BaseModel):
     name: str
     env: str = "production"
     source_type: str
+    public_ip: str
+    lat: float | None = None
+    lon: float | None = None
 
 
 class ServerUpdate(BaseModel):
     name: str | None = None
     env: str | None = None
     source_type: str | None = None
+    public_ip: str | None = None
+    lat: float | None = None
+    lon: float | None = None
 
 
 @router.get("", response_model=list[dict])
 def get_servers(_: str = Depends(require_auth)) -> list[dict]:
-    return list_servers()
+    servers = list_servers()
+    for s in servers:
+        s["setup"] = _build_setup(s["source_type"], s["api_key"])
+    return servers
 
 
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
@@ -118,7 +128,11 @@ def create(body: ServerCreate, _: str = Depends(require_admin)) -> dict:
         raise HTTPException(status_code=422, detail=f"source_type must be one of: {sorted(_SOURCE_TYPES)}")
     if body.env not in _ENVS:
         raise HTTPException(status_code=422, detail=f"env must be one of: {sorted(_ENVS)}")
-    server = create_server({"name": body.name, "env": body.env, "source_type": body.source_type})
+    lat, lon = body.lat, body.lon
+    if lat is None or lon is None:
+        _, lat, lon = geoip_lookup(body.public_ip)
+    server = create_server({"name": body.name, "env": body.env, "source_type": body.source_type,
+                            "public_ip": body.public_ip, "lat": lat, "lon": lon})
     server["setup"] = _build_setup(server["source_type"], server["api_key"])
     return server
 
@@ -136,7 +150,12 @@ def get_server(server_id: int, _: str = Depends(require_auth)) -> dict:
 def patch_server(server_id: int, body: ServerUpdate, _: str = Depends(require_admin)) -> dict:
     if not get_server_by_id(server_id):
         raise HTTPException(status_code=404, detail="Server not found")
-    updated = update_server(server_id, body.model_dump(exclude_none=True))
+    patch = body.model_dump(exclude_none=True)
+    if "public_ip" in patch and "lat" not in patch:
+        _, lat, lon = geoip_lookup(patch["public_ip"])
+        patch["lat"] = lat
+        patch["lon"] = lon
+    updated = update_server(server_id, patch)
     return updated or {}
 
 

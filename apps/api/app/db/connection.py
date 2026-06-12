@@ -70,6 +70,14 @@ def _migrate(conn: sqlite3.Connection) -> None:
     if "scored_by" not in log_cols:
         conn.execute("ALTER TABLE log_entries ADD COLUMN scored_by TEXT NOT NULL DEFAULT 'rules'")
 
+    server_cols = {row[1] for row in conn.execute("PRAGMA table_info(servers)").fetchall()}
+    if "public_ip" not in server_cols:
+        conn.execute("ALTER TABLE servers ADD COLUMN public_ip TEXT")
+    if "lat" not in server_cols:
+        conn.execute("ALTER TABLE servers ADD COLUMN lat REAL")
+    if "lon" not in server_cols:
+        conn.execute("ALTER TABLE servers ADD COLUMN lon REAL")
+
     all_tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
     if "connectors" not in all_tables:
         conn.execute("""

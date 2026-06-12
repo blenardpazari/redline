@@ -117,7 +117,7 @@ export interface ThreatBreakdownResponse {
 
 export type ServerStatus = 'online' | 'offline' | 'unconfigured'
 export type ServerEnv = 'production' | 'staging' | 'dev'
-export type ServerSourceType = 'cloudpanel'
+export type ServerSourceType = 'cloudpanel' | 'nginx' | 'apache' | 'gce' | 'aws' | 'docker'
 
 export interface Server {
   id: number
@@ -130,6 +130,9 @@ export interface Server {
   created_at: string
   total_events: number
   last_event: string | null
+  public_ip: string | null
+  lat: number | null
+  lon: number | null
   setup?: { title: string; steps: string[] }
 }
 

@@ -25,7 +25,7 @@ const HIST_OPTIONS = [
 
 export default function ThreatMap() {
   const { token } = useAuth()
-  const { selectedServerId } = useServer()
+  const { selectedServerId, servers } = useServer()
   const [mode, setMode] = useState<'live' | 'historical'>('live')
   const [liveMinutes, setLiveMinutes] = useState('60')
   const [histHours, setHistHours] = useState('24')
@@ -82,7 +82,7 @@ export default function ThreatMap() {
     <Layout full>
       <div className="absolute inset-0">
         {mode === 'live'
-          ? <ThreatMapComponent entries={liveEntries} />
+          ? <ThreatMapComponent entries={liveEntries} servers={servers} />
           : <HistoricalMap entries={histEntries} loading={histLoading} />
         }
       </div>
@@ -139,6 +139,13 @@ export default function ThreatMap() {
             <span className="ml-auto font-mono tabular-nums">{counts[level]}</span>
           </div>
         ))}
+        {servers.some(s => s.lat) && (
+          <div className="mt-2 border-t border-border pt-2 flex items-center gap-2 text-xs">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#4f8ef7] ring-2 ring-[#4f8ef7]/40 shrink-0" />
+            <span className="text-muted">Your servers</span>
+            <span className="ml-auto font-mono tabular-nums text-dim">{servers.filter(s => s.lat).length}</span>
+          </div>
+        )}
         {mode === 'historical' && (
           <div className="mt-2 border-t border-border pt-2 text-[10px] text-dim">
             Circles sized by request volume

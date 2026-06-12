@@ -12,13 +12,13 @@ const ENVS: { value: ServerEnv; label: string }[] = [
   { value: 'staging',    label: 'Staging' },
 ]
 
-const SOURCE_TYPES: { value: string; label: string; description: string }[] = [
-  { value: 'cloudpanel', label: 'CloudPanel',             description: 'CloudPanel VPS with nginx' },
-  { value: 'nginx',      label: 'Nginx (Linux VPS)',       description: 'Any Linux server running nginx' },
-  { value: 'apache',     label: 'Apache',                  description: 'Apache httpd access logs' },
-  { value: 'gce',        label: 'Google Compute Engine',   description: 'GCE VM instance' },
-  { value: 'aws',        label: 'AWS EC2',                 description: 'Amazon EC2 instance' },
-  { value: 'docker',     label: 'Docker',                  description: 'Containerised web server' },
+const SOURCE_TYPES: { value: string; label: string; description: string; ipLabel: string; ipHint: string }[] = [
+  { value: 'cloudpanel', label: 'CloudPanel',            description: 'CloudPanel VPS with nginx',      ipLabel: 'VPS Public IP',       ipHint: 'e.g. 1.2.3.4 — find it in your VPS dashboard' },
+  { value: 'nginx',      label: 'Nginx (Linux VPS)',     description: 'Any Linux server running nginx',  ipLabel: 'Server Public IP',    ipHint: 'e.g. 1.2.3.4 — run: curl ifconfig.me' },
+  { value: 'apache',     label: 'Apache',                description: 'Apache httpd access logs',        ipLabel: 'Server Public IP',    ipHint: 'e.g. 1.2.3.4 — run: curl ifconfig.me' },
+  { value: 'gce',        label: 'Google Compute Engine', description: 'GCE VM instance',                 ipLabel: 'External IP',         ipHint: 'Console → Compute Engine → VM instances → External IP' },
+  { value: 'aws',        label: 'AWS EC2',               description: 'Amazon EC2 instance',             ipLabel: 'Elastic / Public IP', ipHint: 'EC2 → Instances → Public IPv4 address' },
+  { value: 'docker',     label: 'Docker',                description: 'Containerised web server',        ipLabel: 'Host Public IP',      ipHint: 'Public IP of the host machine running Docker' },
 ]
 
 const inputCls =
@@ -30,13 +30,19 @@ const STATUS_BADGE: Record<string, string> = {
   unconfigured: 'bg-sus/10 text-sus',
 }
 
+interface FormState {
+  name: string
+  env: ServerEnv
+  source_type: string
+  public_ip: string
+}
+
+const BLANK: FormState = { name: '', env: 'production', source_type: 'cloudpanel', public_ip: '' }
+
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
         <h2 className="mb-4 text-base font-semibold">{title}</h2>
         {children}
       </div>
@@ -44,12 +50,112 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   )
 }
 
+function ServerForm({
+  form, onChange, error, onSubmit, onCancel, submitLabel,
+}: {
+  form: FormState
+  onChange: (f: FormState) => void
+  error: string
+  onSubmit: (e: React.FormEvent) => void
+  onCancel: () => void
+  submitLabel: string
+}) {
+  const typeInfo = SOURCE_TYPES.find(t => t.value === form.source_type)!
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-3">
+      <label className="block text-sm text-muted">
+        Name
+        <input
+          className={`${inputCls} mt-1`}
+          value={form.name}
+          onChange={e => onChange({ ...form, name: e.target.value })}
+          required
+          placeholder="e.g. mysite.com"
+        />
+      </label>
+
+      <div>
+        <p className="mb-1.5 text-sm text-muted">Server type</p>
+        <div className="grid grid-cols-2 gap-2">
+          {SOURCE_TYPES.map(t => {
+            const Logo = SERVER_TYPE_LOGO[t.value]
+            return (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => onChange({ ...form, source_type: t.value })}
+                className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors ${
+                  form.source_type === t.value
+                    ? 'border-accent bg-accent/10'
+                    : 'border-border bg-surface-2 hover:border-border-strong'
+                }`}
+              >
+                {Logo && <Logo size={26} />}
+                <div>
+                  <div className={`text-xs font-medium ${form.source_type === t.value ? 'text-accent' : 'text-fg'}`}>{t.label}</div>
+                  <div className="mt-0.5 text-[11px] text-dim">{t.description}</div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm text-muted">
+          {typeInfo.ipLabel}
+          <input
+            className={`${inputCls} mt-1`}
+            value={form.public_ip}
+            onChange={e => onChange({ ...form, public_ip: e.target.value })}
+            placeholder="e.g. 1.2.3.4"
+            required
+          />
+        </label>
+        <p className="mt-1 text-[11px] text-dim">{typeInfo.ipHint}</p>
+      </div>
+
+      <label className="block text-sm text-muted">
+        Environment
+        <Select
+          className={`${inputCls} mt-1`}
+          value={form.env}
+          onChange={v => onChange({ ...form, env: v as ServerEnv })}
+          options={ENVS}
+        />
+      </label>
+
+      {error && <p className="text-sm text-crit">{error}</p>}
+
+      <div className="flex justify-end gap-2 pt-2">
+        <button
+          type="button"
+          className="rounded-md border border-border px-3.5 py-2 text-sm text-muted transition-colors hover:border-border-strong hover:text-fg"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="rounded-md bg-accent px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+        >
+          {submitLabel}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 export default function Sites() {
   const { reload } = useServer()
   const [servers, setServers] = useState<Server[]>([])
   const [adding, setAdding] = useState(false)
-  const [form, setForm] = useState({ name: '', env: 'production' as ServerEnv, source_type: 'cloudpanel' })
-  const [error, setError] = useState('')
+  const [editingServer, setEditingServer] = useState<Server | null>(null)
+  const [addForm, setAddForm] = useState<FormState>(BLANK)
+  const [editForm, setEditForm] = useState<FormState>(BLANK)
+  const [addError, setAddError] = useState('')
+  const [editError, setEditError] = useState('')
   const [expanded, setExpanded] = useState<number | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
   const [rotatedKey, setRotatedKey] = useState<{ id: number; key: string } | null>(null)
@@ -65,23 +171,45 @@ export default function Sites() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
+    setAddError('')
     try {
-      await api.post('/servers', form)
-      setForm({ name: '', env: 'production', source_type: 'cloudpanel' })
+      await api.post('/servers', addForm)
+      setAddForm(BLANK)
       setAdding(false)
-      load()
-      reload()
+      load(); reload()
     } catch {
-      setError('Failed to create server.')
+      setAddError('Failed to create server.')
+    }
+  }
+
+  function openEdit(server: Server) {
+    setEditForm({
+      name: server.name,
+      env: server.env,
+      source_type: server.source_type,
+      public_ip: server.public_ip ?? '',
+    })
+    setEditError('')
+    setEditingServer(server)
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingServer) return
+    setEditError('')
+    try {
+      await api.patch(`/servers/${editingServer.id}`, editForm)
+      setEditingServer(null)
+      load(); reload()
+    } catch {
+      setEditError('Failed to save changes.')
     }
   }
 
   async function handleDelete(id: number) {
     if (!confirm('Remove this server? Existing log entries are kept.')) return
     await api.delete(`/servers/${id}`)
-    load()
-    reload()
+    load(); reload()
     if (expanded === id) setExpanded(null)
   }
 
@@ -102,12 +230,8 @@ export default function Sites() {
   }
 
   const isCode = (step: string) =>
-    step.startsWith('curl') ||
-    step.startsWith('nohup') ||
-    step.startsWith('REDLINE') ||
-    step.startsWith('ls ') ||
-    step.startsWith('*.') ||
-    step.startsWith('log {') ||
+    step.startsWith('curl') || step.startsWith('nohup') || step.startsWith('REDLINE') ||
+    step.startsWith('ls ') || step.startsWith('*.') || step.startsWith('log {') ||
     step.includes('=https://')
 
   const addBtn = (
@@ -132,52 +256,27 @@ export default function Sites() {
 
         {adding && (
           <Modal title="Add Site" onClose={() => setAdding(false)}>
-            <form onSubmit={handleAdd} className="space-y-3">
-              <label className="block text-sm text-muted">
-                Name
-                <input className={`${inputCls} mt-1`} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="e.g. mysite.com" />
-              </label>
-              <div>
-                <p className="mb-1.5 text-sm text-muted">Server type</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {SOURCE_TYPES.map(t => {
-                    const Logo = SERVER_TYPE_LOGO[t.value]
-                    return (
-                      <button
-                        key={t.value}
-                        type="button"
-                        onClick={() => setForm(f => ({ ...f, source_type: t.value }))}
-                        className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-left transition-colors ${
-                          form.source_type === t.value
-                            ? 'border-accent bg-accent/10'
-                            : 'border-border bg-surface-2 hover:border-border-strong'
-                        }`}
-                      >
-                        {Logo && <Logo size={26} />}
-                        <div>
-                          <div className={`text-xs font-medium ${form.source_type === t.value ? 'text-accent' : 'text-fg'}`}>{t.label}</div>
-                          <div className="mt-0.5 text-[11px] text-dim">{t.description}</div>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-              <label className="block text-sm text-muted">
-                Environment
-                <Select
-                  className={`${inputCls} mt-1`}
-                  value={form.env}
-                  onChange={v => setForm(f => ({ ...f, env: v as ServerEnv }))}
-                  options={ENVS}
-                />
-              </label>
-              {error && <p className="text-sm text-crit">{error}</p>}
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" className="rounded-md border border-border px-3.5 py-2 text-sm text-muted transition-colors hover:border-border-strong hover:text-fg" onClick={() => setAdding(false)}>Cancel</button>
-                <button type="submit" className="rounded-md bg-accent px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover">Create</button>
-              </div>
-            </form>
+            <ServerForm
+              form={addForm}
+              onChange={setAddForm}
+              error={addError}
+              onSubmit={handleAdd}
+              onCancel={() => { setAdding(false); setAddForm(BLANK) }}
+              submitLabel="Create"
+            />
+          </Modal>
+        )}
+
+        {editingServer && (
+          <Modal title={`Edit — ${editingServer.name}`} onClose={() => setEditingServer(null)}>
+            <ServerForm
+              form={editForm}
+              onChange={setEditForm}
+              error={editError}
+              onSubmit={handleEdit}
+              onCancel={() => setEditingServer(null)}
+              submitLabel="Save changes"
+            />
           </Modal>
         )}
 
@@ -213,7 +312,7 @@ export default function Sites() {
             {servers.map(server => (
               <div key={server.id} className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
                 <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4 sm:px-5">
-                  {/* Name + icon */}
+                  {/* Logo + name */}
                   <div className="flex items-center gap-3">
                     <div className="shrink-0">
                       {SERVER_TYPE_LOGO[server.source_type]
@@ -223,7 +322,10 @@ export default function Sites() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{server.name}</div>
-                      <div className="text-xs text-dim">{server.source_type} · {server.env}</div>
+                      <div className="text-xs text-dim">
+                        {server.source_type} · {server.env}
+                        {server.public_ip && <span className="ml-1 font-mono">· {server.public_ip}</span>}
+                      </div>
                     </div>
                   </div>
 
@@ -254,7 +356,9 @@ export default function Sites() {
                         {expanded === server.id ? 'Hide setup' : 'Setup guide'}
                       </button>
                       <span className="text-border-strong">·</span>
-                      <button className="cursor-pointer text-muted transition-colors hover:text-fg" onClick={() => handleRotate(server.id)}>Rotate</button>
+                      <button className="cursor-pointer text-muted transition-colors hover:text-fg" onClick={() => openEdit(server)}>Edit</button>
+                      <span className="text-border-strong">·</span>
+                      <button className="cursor-pointer text-muted transition-colors hover:text-fg" onClick={() => handleRotate(server.id)}>Rotate key</button>
                       <span className="text-border-strong">·</span>
                       <button className="cursor-pointer text-crit/80 transition-colors hover:text-crit" onClick={() => handleDelete(server.id)}>Remove</button>
                     </div>
