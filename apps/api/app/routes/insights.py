@@ -1,6 +1,11 @@
 import json
-from datetime import datetime
+from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
+
+import numpy as np
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -11,6 +16,72 @@ from auth.jwt_handler import require_auth
 from config import get_config
 
 router = APIRouter(prefix="/insights", tags=["insights"])
+
+
+def _write_evaluation(artifacts_path: str, data: list[dict], trained_at: str) -> None:
+    import joblib
+    path = Path(artifacts_path)
+    labels = [r["threat_type"] or "NORMAL" for r in data]
+    paths = [r["path"] for r in data]
+
+    train_idx, test_idx = train_test_split(range(len(data)), test_size=0.2, random_state=42, stratify=labels)
+    test_labels = [labels[i] for i in test_idx]
+    test_paths = [paths[i] for i in test_idx]
+
+    clf_artifact = joblib.load(path / "threat_classifier.joblib")
+    pipeline = clf_artifact["pipeline"]
+    classes = clf_artifact["classes"]
+    preds = pipeline.predict(test_paths)
+
+    def _metrics(name: str, y_true: list, y_pred: list, feat_imp=None) -> dict:
+        cm = confusion_matrix(y_true, y_pred, labels=classes).tolist()
+        per_class = {}
+        for i, cls in enumerate(classes):
+            y_b = [1 if y == cls else 0 for y in y_true]
+            p_b = [1 if p == cls else 0 for p in y_pred]
+            per_class[cls] = {
+                "precision": round(precision_score(y_b, p_b, zero_division=0), 4),
+                "recall": round(recall_score(y_b, p_b, zero_division=0), 4),
+                "f1": round(f1_score(y_b, p_b, zero_division=0), 4),
+                "support": int(sum(y_b)),
+            }
+        m = {
+            "name": name,
+            "accuracy": round(accuracy_score(y_true, y_pred), 4),
+            "precision": round(precision_score(y_true, y_pred, average="weighted", zero_division=0), 4),
+            "recall": round(recall_score(y_true, y_pred, average="weighted", zero_division=0), 4),
+            "f1": round(f1_score(y_true, y_pred, average="weighted", zero_division=0), 4),
+            "confusion_matrix": cm,
+            "classes": classes,
+            "per_class": per_class,
+        }
+        if feat_imp is not None:
+            m["feature_importances"] = [round(float(v), 4) for v in feat_imp]
+        return m
+
+    clf_metrics = _metrics("Threat Classifier (TF-IDF)", test_labels, preds)
+
+    scores = [r["status_code"] for r in data]
+    buckets = ["0-20", "20-40", "40-60", "60-80", "80-100"]
+    distribution: dict = {cls: [0, 0, 0, 0, 0] for cls in classes}
+    for r, lbl in zip(data, labels):
+        score = min(int(r["status_code"] / 10), 4)
+        distribution[lbl][score] += 1
+
+    evaluation = {
+        "classifier": {"models": [clf_metrics], "winner": clf_metrics["name"]},
+        "anomaly": {"models": [clf_metrics], "winner": clf_metrics["name"]},
+        "score_distribution": {"buckets": buckets, "distribution": distribution},
+        "dataset": {
+            "total": len(data),
+            "class_counts": dict(Counter(labels)),
+            "test_size": 0.2,
+        },
+        "trained_at": trained_at,
+    }
+
+    with open(path / "evaluation.json", "w") as f:
+        json.dump(evaluation, f, indent=2)
 
 
 @router.get("")
@@ -75,7 +146,11 @@ def retrain(request: Request, _: str = Depends(require_auth)):
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     request.app.state.models = load_models(cfg.ml_artifacts_path)
-    return RetrainResponse(samples=samples, trained_at=datetime.utcnow().isoformat())
+
+    trained_at = datetime.now(timezone.utc).isoformat()
+    _write_evaluation(cfg.ml_artifacts_path, data, trained_at)
+
+    return RetrainResponse(samples=samples, trained_at=trained_at)
 
 
 @router.get("/retrain/status")
