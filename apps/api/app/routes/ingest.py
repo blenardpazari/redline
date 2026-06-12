@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.db.queries import insert_log_entry
 from app.db.server_queries import get_server_by_api_key, touch_server_last_seen
 from app.services.alert_engine import process as process_alert
-from app.services.ingestion import parse_and_score
+from app.services.ingestion import parse_and_score, StaticAssetError
 from app.types.models import Alert, LogEntry
 from auth.jwt_handler import require_auth
 from config import get_config
@@ -44,6 +44,8 @@ async def ingest(
 
     try:
         entry_insert, threat = parse_and_score(body.raw, request.app.state.models)
+    except StaticAssetError:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
@@ -87,6 +89,8 @@ async def ingest_webhook(
 
     try:
         entry_insert, threat = parse_and_score(body.raw, request.app.state.models)
+    except StaticAssetError:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT)
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 

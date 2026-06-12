@@ -100,6 +100,11 @@ _PRIVATE = ("127.", "10.", "192.168.", "::1", "172.16.", "172.17.", "172.18.",
             "172.19.", "172.20.", "172.21.", "172.22.", "172.23.", "172.24.",
             "172.25.", "172.26.", "172.27.", "172.28.", "172.29.", "172.30.",
             "172.31.")
+_STATIC_RE = re.compile(
+    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|svg|ico"
+    r"|woff|woff2|ttf|eot|otf|mp4|webm|ogg|zip|gz|br)(\?[^\s\"]*)?$",
+    re.I,
+)
 
 
 def parse_nginx(line):
@@ -108,6 +113,9 @@ def parse_nginx(line):
         return None
     real_ip = m.group("real_ip") or m.group("proxy_ip")
     if real_ip.startswith(_PRIVATE):
+        return None
+    path = m.group("path")
+    if _STATIC_RE.search(path.split("?")[0]):
         return None
     try:
         dt = datetime.strptime(m.group("time"), _TIME_FMT).astimezone(timezone.utc)
@@ -118,7 +126,7 @@ def parse_nginx(line):
         "timestamp": timestamp,
         "ip": real_ip,
         "method": m.group("method"),
-        "path": m.group("path"),
+        "path": path,
         "status_code": int(m.group("status")),
         "response_time_ms": 0.0,
     }

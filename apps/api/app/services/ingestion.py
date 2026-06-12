@@ -28,6 +28,15 @@ _RULES: list[tuple[re.Pattern, str, float]] = [
 
 _DDOS_RPM_THRESHOLD = 30.0
 
+_STATIC_EXT = re.compile(
+    r"\.(css|js|mjs|map|ts|jsx|tsx|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot|otf|mp4|webm|ogg|zip|gz|br)(\?.*)?$",
+    re.I,
+)
+
+
+def is_static(path: str) -> bool:
+    return bool(_STATIC_EXT.search(path.split("?")[0]))
+
 
 def _path_base(path: str) -> str:
     return path.split("?")[0]
@@ -72,12 +81,19 @@ def _fallback_score(scorer_input: ScorerInput) -> ThreatScore:
     )
 
 
+class StaticAssetError(ValueError):
+    pass
+
+
 def parse_and_score(raw: str, models: ScorerModels | None) -> tuple[LogEntryInsert, ThreatScore]:
     data: dict = json.loads(raw)
 
     timestamp: str = data["timestamp"]
     ip: str = data["ip"]
     path: str = data["path"]
+
+    if is_static(path):
+        raise StaticAssetError(f"skipped static asset: {path}")
 
     dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
     recent_count = count_recent_requests(ip, minutes=5)
