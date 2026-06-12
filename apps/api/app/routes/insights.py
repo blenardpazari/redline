@@ -1,6 +1,5 @@
 import asyncio
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -9,7 +8,6 @@ from config import get_config
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
-_retrain_lock = asyncio.Lock()
 _retrain_status: dict = {"running": False, "last_exit": None, "last_output": ""}
 
 
@@ -31,12 +29,14 @@ async def retrain():
     if _retrain_status["running"]:
         raise HTTPException(status_code=409, detail="Retrain already in progress")
 
+    cfg = get_config()
+
     async def _run():
         _retrain_status["running"] = True
         _retrain_status["last_exit"] = None
         _retrain_status["last_output"] = ""
         try:
-            ml_dir = Path(__file__).parent.parent.parent.parent.parent / "ml"
+            ml_dir = Path(cfg.ml_artifacts_path).parent
             proc = await asyncio.create_subprocess_exec(
                 sys.executable, "train.py",
                 cwd=str(ml_dir),
