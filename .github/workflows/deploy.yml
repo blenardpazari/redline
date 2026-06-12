@@ -48,14 +48,15 @@ jobs:
           TARGET: ${{ secrets.VPS_API_PATH }}
           EXCLUDE: __pycache__, *.pyc, .env, data/, ml/artifacts/
 
-      - name: Deploy ML train script
+      - name: Deploy ML scripts
         uses: easingthemes/ssh-deploy@v6.0.1
         with:
           SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.VPS_HOST }}
           REMOTE_USER: ${{ secrets.VPS_USER }}
-          SOURCE: apps/ml/train.py
+          SOURCE: apps/ml/
           TARGET: ${{ secrets.VPS_API_PATH }}/ml/
+          EXCLUDE: .venv/, __pycache__, *.pyc, artifacts/
 
       - name: Deploy systemd service file
         uses: easingthemes/ssh-deploy@v6.0.1
@@ -82,3 +83,9 @@ jobs:
             systemctl --user -M ${{ secrets.VPS_USER }}@ enable redline-api
             systemctl --user -M ${{ secrets.VPS_USER }}@ restart redline-api
             systemctl --user -M ${{ secrets.VPS_USER }}@ is-active redline-api
+            echo "==> Training ML models..."
+            cd ${{ secrets.VPS_API_PATH }}/ml
+            python3 -m venv .venv
+            .venv/bin/pip install -r requirements.txt --quiet
+            .venv/bin/python train.py
+            echo "==> ML training complete"
