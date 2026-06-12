@@ -10,9 +10,12 @@ from config import AppConfig, get_config
 _bearer = HTTPBearer()
 
 
-def create_token(username: str, cfg: AppConfig, role: str = "admin") -> str:
+def create_token(username: str, cfg: AppConfig, role: str = "admin", login_ip: str | None = None) -> str:
     expiry = datetime.now(timezone.utc) + timedelta(hours=cfg.jwt_expires_hours)
-    return jwt.encode({"sub": username, "role": role, "exp": expiry}, cfg.jwt_secret, algorithm="HS256")
+    payload: dict = {"sub": username, "role": role, "exp": expiry}
+    if login_ip:
+        payload["login_ip"] = login_ip
+    return jwt.encode(payload, cfg.jwt_secret, algorithm="HS256")
 
 
 def verify_token(token: str, cfg: AppConfig) -> dict:

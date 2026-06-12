@@ -6,7 +6,13 @@ export function useAuth() {
   const [authenticated, setAuthenticated] = useState(isAuthenticated)
 
   const login = useCallback(async (username: string, password: string): Promise<void> => {
-    const { token } = await api.post<{ token: string }>('/auth/login', { username, password })
+    let client_ip: string | undefined
+    try {
+      const res = await fetch('https://api.ipify.org?format=json')
+      const data = await res.json()
+      client_ip = data.ip
+    } catch {}
+    const { token } = await api.post<{ token: string }>('/auth/login', { username, password, client_ip })
     saveToken(token)
     setAuthenticated(true)
   }, [])
