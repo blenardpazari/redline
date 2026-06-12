@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Sidebar from '../Sidebar/Sidebar'
 import TopBar from './TopBar'
+import AttackSimulator from '../Simulator/AttackSimulator'
 
 interface Props {
   children: React.ReactNode
@@ -10,6 +11,7 @@ interface Props {
 
 export default function Layout({ children, full = false }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [simOpen, setSimOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-bg text-fg">
@@ -18,6 +20,23 @@ export default function Layout({ children, full = false }: Props) {
         <TopBar onMenuOpen={() => setMobileOpen(true)} />
         <main className={full ? 'relative flex-1' : 'flex-1 p-4 md:p-6'}>{children}</main>
       </div>
+
+      {/* Floating simulator trigger */}
+      {!simOpen && (
+        <button
+          onClick={() => setSimOpen(true)}
+          title="Attack Simulator"
+          className="fixed bottom-5 right-5 z-[1999] flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-muted shadow-lg transition-all hover:border-accent hover:text-accent hover:shadow-accent/20"
+        >
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-40" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+          </span>
+          Simulator
+        </button>
+      )}
+
+      {simOpen && <AttackSimulator onClose={() => setSimOpen(false)} />}
     </div>
   )
 }

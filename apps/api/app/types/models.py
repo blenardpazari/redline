@@ -18,6 +18,7 @@ class LogEntry(BaseModel):
     threat_level: ThreatLevel
     threat_score: float
     threat_type: str | None
+    scored_by: str = "rules"
 
 
 class Alert(BaseModel):
@@ -37,6 +38,7 @@ class ThreatScore(BaseModel):
     threat_type: str
     final_score: float
     threat_level: ThreatLevel
+    scored_by: str = "rules"  # "rules" | "ml" | "fallback"
 
 
 class Stats(BaseModel):

@@ -66,6 +66,10 @@ def _migrate(conn: sqlite3.Connection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_log_server ON log_entries(server_id, timestamp DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_alerts_server ON alerts(server_id, created_at DESC)")
 
+    log_cols = {row[1] for row in conn.execute("PRAGMA table_info(log_entries)").fetchall()}
+    if "scored_by" not in log_cols:
+        conn.execute("ALTER TABLE log_entries ADD COLUMN scored_by TEXT NOT NULL DEFAULT 'rules'")
+
     all_tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
     if "connectors" not in all_tables:
         conn.execute("""

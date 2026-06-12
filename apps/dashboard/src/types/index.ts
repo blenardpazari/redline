@@ -14,6 +14,7 @@ export interface LogEntry {
   threat_level: ThreatLevel;
   threat_score: number;
   threat_type: string | null;
+  scored_by: 'rules' | 'ml' | 'fallback';
 }
 
 export interface Alert {

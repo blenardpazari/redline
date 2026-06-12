@@ -28,6 +28,7 @@ class LogEntryInsert(TypedDict, total=False):
     path: str
     status_code: int
     response_time_ms: float
+    scored_by: str
     threat_level: str
     threat_score: float
     threat_type: str | None
@@ -57,14 +58,15 @@ def insert_log_entry(entry: LogEntryInsert) -> int:
         """
         INSERT INTO log_entries
             (timestamp, ip, country, lat, lon, method, path,
-             status_code, response_time_ms, threat_level, threat_score, threat_type, raw, server_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             status_code, response_time_ms, threat_level, threat_score, threat_type, raw, server_id, scored_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             entry["timestamp"], entry["ip"], entry.get("country"), entry.get("lat"),
             entry.get("lon"), entry["method"], entry["path"], entry["status_code"],
             entry["response_time_ms"], entry["threat_level"], entry["threat_score"],
             entry.get("threat_type"), entry["raw"], entry.get("server_id"),
+            entry.get("scored_by", "rules"),
         ),
     )
     conn.commit()
@@ -83,7 +85,7 @@ def get_log_entries(limit: int, offset: int, server_id: int | None = None, hours
     cursor = conn.execute(
         f"""
         SELECT id, timestamp, ip, country, lat, lon, method, path,
-               status_code, response_time_ms, threat_level, threat_score, threat_type
+               status_code, response_time_ms, threat_level, threat_score, threat_type, scored_by
         FROM log_entries {where}
         ORDER BY timestamp DESC
         LIMIT ? OFFSET ?
@@ -208,7 +210,7 @@ def search_log_entries(
     rows = conn.execute(
         f"""
         SELECT id, timestamp, ip, country, lat, lon, method, path,
-               status_code, response_time_ms, threat_level, threat_score, threat_type
+               status_code, response_time_ms, threat_level, threat_score, threat_type, scored_by
         FROM log_entries {where}
         ORDER BY {col} {direction}
         LIMIT ? OFFSET ?
@@ -247,7 +249,7 @@ def get_ip_profile(ip: str) -> dict | None:
         LogEntry(**dict(r)) for r in conn.execute(
             """
             SELECT id, timestamp, ip, country, lat, lon, method, path,
-                   status_code, response_time_ms, threat_level, threat_score, threat_type
+                   status_code, response_time_ms, threat_level, threat_score, threat_type, scored_by
             FROM log_entries WHERE ip = ? ORDER BY timestamp DESC LIMIT 100
             """,
             (ip,),

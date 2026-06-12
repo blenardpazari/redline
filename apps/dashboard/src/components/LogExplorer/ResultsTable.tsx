@@ -22,7 +22,19 @@ function fmtTime(ts: string) {
   return new Date(ts).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-const GRID = 'grid grid-cols-[90px_120px_70px_1fr_70px_60px_100px_80px] gap-2 px-4'
+const GRID = 'grid grid-cols-[90px_120px_70px_1fr_70px_60px_100px_60px_80px] gap-2 px-4'
+
+const SCORED_BY_BADGE: Record<string, string> = {
+  ml:       'bg-[#4f8ef7]/15 text-[#4f8ef7] border-[#4f8ef7]/30',
+  rules:    'bg-accent/10 text-accent border-accent/20',
+  fallback: 'bg-surface-2 text-dim border-border',
+}
+
+const SCORED_BY_LABEL: Record<string, string> = {
+  ml:       'ML',
+  rules:    'Rules',
+  fallback: 'Heuristic',
+}
 
 export default function ResultsTable({ entries, total, page, limit, sort, order, onSort, onPage }: Props) {
   const navigate = useNavigate()
@@ -52,7 +64,7 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
         {th('Time', 'timestamp')}<span>IP</span>
         <span>Method</span><span>Path</span>
         {th('Status', 'status_code')}{th('Score', 'threat_score')}
-        <span>Threat</span><span />
+        <span>Threat</span><span>Engine</span><span />
       </div>
       {entries.length === 0 && (
         <p className="px-4 py-8 text-center text-sm text-dim">No matching entries</p>
@@ -71,6 +83,9 @@ export default function ResultsTable({ entries, total, page, limit, sort, order,
           <span className="text-muted">{e.status_code}</span>
           <span className={`font-medium ${LEVEL_TEXT_CLASS[e.threat_level]}`}>{e.threat_score.toFixed(1)}</span>
           <span className="text-muted">{e.threat_level}</span>
+          <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-medium ${SCORED_BY_BADGE[e.scored_by] ?? SCORED_BY_BADGE.fallback}`}>
+            {SCORED_BY_LABEL[e.scored_by] ?? e.scored_by}
+          </span>
           <button
             onClick={() => setExplainId(e.id)}
             className="cursor-pointer flex items-center gap-1 rounded-md border border-border bg-surface-2 px-2 py-0.5 text-[11px] font-sans font-medium text-muted transition-colors hover:border-accent hover:bg-accent/10 hover:text-accent"
