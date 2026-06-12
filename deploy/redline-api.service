@@ -5,7 +5,7 @@ After=network.target
 [Service]
 WorkingDirectory=/home/anomalies-app/htdocs/app.anomalies.codes/api
 EnvironmentFile=/home/anomalies-app/htdocs/app.anomalies.codes/api/.env
-ExecStart=/home/anomalies-app/htdocs/app.anomalies.codes/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStart=/home/anomalies-app/htdocs/app.anomalies.codes/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001
 Restart=always
 RestartSec=3
 
