@@ -22,7 +22,7 @@ function IconMenu({ size = 18 }: { size?: number }) {
   )
 }
 
-function getTokenPayload(): { sub?: string; username?: string; role?: string } {
+function getTokenPayload(): { sub?: string; username?: string; role?: string; login_ip?: string } {
   try {
     const token = localStorage.getItem('redline_token')
     if (!token) return {}
@@ -47,6 +47,7 @@ export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const payload = getTokenPayload()
   const username = payload.sub ?? payload.username ?? '?'
   const role = payload.role ?? 'viewer'
+  const loginIp = payload.login_ip
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -146,6 +147,9 @@ export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
               <div className="min-w-0">
                 <div className="truncate text-[13px] font-medium text-fg">{username}</div>
                 <div className="text-[11px] capitalize text-muted">{role}</div>
+                {loginIp && (
+                  <div className="text-[10px] text-dim font-mono mt-0.5">IP: {loginIp}</div>
+                )}
               </div>
             </div>
 

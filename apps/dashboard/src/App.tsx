@@ -17,6 +17,7 @@ import ThreatBreakdown from './pages/ThreatBreakdown'
 import ThreatMap from './pages/ThreatMap'
 import Users from './pages/Users'
 import Integrations from './pages/Connectors'
+import About from './pages/About'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated()) return <Navigate to="/login" replace />
@@ -48,6 +49,7 @@ export default function App() {
             <Route path="/users"     element={<Protected><Users /></Protected>} />
             <Route path="/health"      element={<Protected><Health /></Protected>} />
             <Route path="/integrations" element={<Protected><Integrations /></Protected>} />
+            <Route path="/about"     element={<Protected><About /></Protected>} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </ServerProvider>
