@@ -22,7 +22,7 @@ export default function Layout({ children, full = false }: Props) {
         {!full && (
           <footer className="px-4 py-3 md:px-6 border-t border-border/40">
             <p className="text-[11px] text-dim">
-              Redline v0.1 · Built by{' '}
+              Redline {import.meta.env.VITE_APP_VERSION ?? 'dev'} · Built by{' '}
               <span className="text-muted">Blenard Pazari</span>
               {' '}· © {new Date().getFullYear()} Anomalies
             </p>

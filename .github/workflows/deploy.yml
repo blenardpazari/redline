@@ -2,7 +2,8 @@ name: Deploy
 
 on:
   push:
-    branches: [master]
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
@@ -27,6 +28,7 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+          VITE_APP_VERSION: ${{ github.ref_name }}
         run: npm run build
 
       - name: Deploy dashboard (static files)
