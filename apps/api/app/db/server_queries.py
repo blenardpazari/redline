@@ -29,11 +29,12 @@ def create_server(data: ServerInsert) -> dict:
     now = _now()
     cursor = conn.execute(
         """
-        INSERT INTO servers (name, env, source_type, api_key, status, created_at, public_ip, lat, lon)
-        VALUES (?, ?, ?, ?, 'unconfigured', ?, ?, ?, ?)
+        INSERT INTO servers (name, env, source_type, api_key, status, created_at, public_ip, lat, lon, city, country)
+        VALUES (?, ?, ?, ?, 'unconfigured', ?, ?, ?, ?, ?, ?)
         """,
         (data["name"], data["env"], data["source_type"], key, now,
-         data.get("public_ip"), data.get("lat"), data.get("lon")),
+         data.get("public_ip"), data.get("lat"), data.get("lon"),
+         data.get("city"), data.get("country")),
     )
     conn.commit()
     return get_server_by_id(cursor.lastrowid)  # type: ignore[arg-type]
@@ -42,7 +43,7 @@ def create_server(data: ServerInsert) -> dict:
 def list_servers() -> list[dict]:
     conn = get_connection()
     rows = conn.execute(
-        "SELECT id, name, env, source_type, api_key, status, last_seen, created_at, public_ip, lat, lon FROM servers ORDER BY created_at DESC"
+        "SELECT id, name, env, source_type, api_key, status, last_seen, created_at, public_ip, lat, lon, city, country FROM servers ORDER BY created_at DESC"
     ).fetchall()
     servers = [dict(r) for r in rows]
     for s in servers:
@@ -58,7 +59,7 @@ def list_servers() -> list[dict]:
 def get_server_by_id(server_id: int) -> dict | None:
     conn = get_connection()
     row = conn.execute(
-        "SELECT id, name, env, source_type, api_key, status, last_seen, created_at, public_ip, lat, lon FROM servers WHERE id = ?",
+        "SELECT id, name, env, source_type, api_key, status, last_seen, created_at, public_ip, lat, lon, city, country FROM servers WHERE id = ?",
         (server_id,),
     ).fetchone()
     if row is None:

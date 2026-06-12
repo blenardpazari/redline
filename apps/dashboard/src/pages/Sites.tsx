@@ -326,6 +326,17 @@ export default function Sites() {
                         {server.source_type} · {server.env}
                         {server.public_ip && <span className="ml-1 font-mono">· {server.public_ip}</span>}
                       </div>
+                      {(server.city || server.country) && (
+                        <div className="mt-0.5 flex items-center gap-1 text-[11px] text-dim">
+                          <span>📍</span>
+                          <span>{[server.city, server.country].filter(Boolean).join(', ')}</span>
+                          {server.lat !== null && server.lon !== null && (
+                            <span className="font-mono text-[10px] opacity-60">
+                              ({server.lat.toFixed(4)}, {server.lon.toFixed(4)})
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -157,12 +157,24 @@ export default function Dashboard() {
           <p className="px-4 py-6 text-center text-sm text-dim">No sites configured</p>
         ) : servers.map(s => (
           <div key={s.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
-            <div className="flex items-center">
+            <div className="flex items-center gap-2 min-w-0">
               {statusDot(s)}
-              <span className="font-medium">{s.name}</span>
-              <span className="ml-2 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{s.env}</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{s.name}</span>
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">{s.env}</span>
+                </div>
+                {(s.city || s.country) && (
+                  <div className="text-[11px] text-dim truncate">
+                    📍 {[s.city, s.country].filter(Boolean).join(', ')}
+                    {s.lat !== null && s.lon !== null && (
+                      <span className="ml-1 font-mono opacity-50">({s.lat.toFixed(2)}, {s.lon.toFixed(2)})</span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-4 text-xs text-muted">
+            <div className="flex items-center gap-4 text-xs text-muted shrink-0">
               <span className="font-mono">{(s.total_events ?? 0).toLocaleString()} events</span>
               <span className="font-mono text-dim">{s.last_seen ? new Date(s.last_seen).toLocaleTimeString() : 'never'}</span>
             </div>

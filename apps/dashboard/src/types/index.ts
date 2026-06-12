@@ -133,6 +133,8 @@ export interface Server {
   public_ip: string | null
   lat: number | null
   lon: number | null
+  city: string | null
+  country: string | null
   setup?: { title: string; steps: string[] }
 }
 

@@ -77,6 +77,10 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE servers ADD COLUMN lat REAL")
     if "lon" not in server_cols:
         conn.execute("ALTER TABLE servers ADD COLUMN lon REAL")
+    if "city" not in server_cols:
+        conn.execute("ALTER TABLE servers ADD COLUMN city TEXT")
+    if "country" not in server_cols:
+        conn.execute("ALTER TABLE servers ADD COLUMN country TEXT")
 
     all_tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
     if "connectors" not in all_tables:

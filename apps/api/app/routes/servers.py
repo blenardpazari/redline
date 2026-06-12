@@ -10,7 +10,7 @@ from app.db.server_queries import (
     rotate_server_key,
     update_server,
 )
-from app.services.geoip import lookup as geoip_lookup
+from app.services.geoip import lookup_full as geoip_lookup
 from auth.jwt_handler import require_admin, require_auth
 
 router = APIRouter(prefix="/servers", tags=["servers"])
@@ -129,10 +129,12 @@ def create(body: ServerCreate, _: str = Depends(require_admin)) -> dict:
     if body.env not in _ENVS:
         raise HTTPException(status_code=422, detail=f"env must be one of: {sorted(_ENVS)}")
     lat, lon = body.lat, body.lon
+    country, city = None, None
     if lat is None or lon is None:
-        _, lat, lon = geoip_lookup(body.public_ip)
+        country, city, lat, lon = geoip_lookup(body.public_ip)
     server = create_server({"name": body.name, "env": body.env, "source_type": body.source_type,
-                            "public_ip": body.public_ip, "lat": lat, "lon": lon})
+                            "public_ip": body.public_ip, "lat": lat, "lon": lon,
+                            "city": city, "country": country})
     server["setup"] = _build_setup(server["source_type"], server["api_key"])
     return server
 
@@ -152,9 +154,11 @@ def patch_server(server_id: int, body: ServerUpdate, _: str = Depends(require_ad
         raise HTTPException(status_code=404, detail="Server not found")
     patch = body.model_dump(exclude_none=True)
     if "public_ip" in patch and "lat" not in patch:
-        _, lat, lon = geoip_lookup(patch["public_ip"])
+        country, city, lat, lon = geoip_lookup(patch["public_ip"])
         patch["lat"] = lat
         patch["lon"] = lon
+        patch["city"] = city
+        patch["country"] = country
     updated = update_server(server_id, patch)
     return updated or {}
 
