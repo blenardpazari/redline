@@ -54,7 +54,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.VPS_HOST }}
           REMOTE_USER: ${{ secrets.VPS_USER }}
           SOURCE: deploy/redline-api.service
-          TARGET: ${{ secrets.VPS_DEPLOY_PATH }}
+          TARGET: ${{ secrets.VPS_API_PATH }}
 
       - name: Install Python deps & restart service
         uses: appleboy/ssh-action@v1.2.5
@@ -67,7 +67,7 @@ jobs:
             python3 -m venv .venv
             .venv/bin/pip install -r requirements.txt --quiet
             mkdir -p ~/.config/systemd/user
-            cp ${{ secrets.VPS_DEPLOY_PATH }}/redline-api.service ~/.config/systemd/user/redline-api.service
+            cp ${{ secrets.VPS_API_PATH }}/redline-api.service ~/.config/systemd/user/redline-api.service
             systemctl --user daemon-reload
             systemctl --user enable redline-api
             systemctl --user restart redline-api
