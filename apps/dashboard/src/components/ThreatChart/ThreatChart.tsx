@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function ThreatChart({ data }: Props) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
 
   return (

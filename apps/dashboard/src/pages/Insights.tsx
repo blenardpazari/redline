@@ -78,7 +78,7 @@ function ConfusionMatrix({ matrix, classes }: { matrix: number[][]; classes: str
 }
 
 function ModelComparisonBar({ models, metric }: { models: ModelMetrics[]; metric: keyof ModelMetrics }) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const data = models.map(m => ({
     name: m.name,
@@ -105,7 +105,7 @@ function ModelComparisonBar({ models, metric }: { models: ModelMetrics[]; metric
 }
 
 function PerClassRadar({ perClass }: { perClass: Record<string, { precision: number; recall: number; f1: number }> }) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const data = Object.entries(perClass).map(([cls, v]) => ({
     class: cls.replace('_', ' '),
@@ -130,7 +130,7 @@ function PerClassRadar({ perClass }: { perClass: Record<string, { precision: num
 }
 
 function DatasetBar({ classCounts }: { classCounts: Record<string, number> }) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const data = Object.entries(classCounts).map(([k, v]) => ({ name: k.replace('_', ' '), count: v }))
   return (
@@ -149,7 +149,7 @@ function DatasetBar({ classCounts }: { classCounts: Record<string, number> }) {
 const RF_FEATURE_NAMES = ['Hour of Day', 'Path Length', 'Status Code', 'Response Time', 'Attack Path']
 
 function FeatureImportanceChart({ importances }: { importances: number[] }) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const data = importances
     .map((v, i) => ({ name: RF_FEATURE_NAMES[i] ?? `f${i}`, value: Math.round(v * 1000) / 10 }))

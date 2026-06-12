@@ -18,7 +18,7 @@ function barColor(p: AnalyticsPoint, t: ChartTheme): string {
 }
 
 export default function BarBreakdown({ points, range }: Props) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const data = points.map((p) => ({ ...p, total: p.normal + p.anomaly + p.critical }))
   const label = range === '24h' ? 'Requests per hour' : 'Requests per day'

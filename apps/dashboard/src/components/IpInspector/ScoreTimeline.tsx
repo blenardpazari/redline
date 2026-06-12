@@ -13,7 +13,7 @@ interface DotProps { cx: number; cy: number; payload: Point }
 interface Props { requests: LogEntry[] }
 
 export default function ScoreTimeline({ requests }: Props) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const dark = theme === 'dark'
   const t = chartTheme(dark)
 

@@ -6,7 +6,7 @@ import { chartTheme, threatTypeColor } from '../../lib/chartTheme'
 interface Props { items: BreakdownItem[] }
 
 export default function BreakdownPie({ items }: Props) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
 
   if (!items.length) {

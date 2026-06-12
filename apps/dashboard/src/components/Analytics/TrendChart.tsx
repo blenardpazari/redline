@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function TrendChart({ points, range }: Props) {
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
 
   return (

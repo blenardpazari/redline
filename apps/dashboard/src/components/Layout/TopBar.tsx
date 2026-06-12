@@ -4,6 +4,14 @@ import { useAuth } from '../../hooks/useAuth'
 import { useServer } from '../../context/ServerContext'
 import { useTheme } from '../../context/ThemeContext'
 import { IconLogOut, IconMoon, IconServer, IconSun } from '../ui/icons'
+
+function IconMonitor({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>
+  )
+}
 import Select from '../ui/Select'
 
 function IconMenu({ size = 18 }: { size?: number }) {
@@ -31,7 +39,7 @@ function initials(name: string): string {
 export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
   const { logout } = useAuth()
   const navigate = useNavigate()
-  const { theme, toggle } = useTheme()
+  const { theme, setTheme } = useTheme()
   const { servers, selectedServerId, setSelectedServerId } = useServer()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -92,14 +100,21 @@ export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
 
       <div className="flex-1" />
 
-      {/* Theme toggle */}
-      <button
-        onClick={toggle}
-        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        className="hidden h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border bg-surface text-muted transition-colors hover:border-border-strong hover:text-fg md:flex"
-      >
-        {theme === 'dark' ? <IconSun size={16} /> : <IconMoon size={16} />}
-      </button>
+      {/* Theme pill — desktop */}
+      <div className="hidden items-center gap-0.5 rounded-md border border-border bg-surface p-0.5 md:flex">
+        {([['system', <IconMonitor size={14} />], ['light', <IconSun size={14} />], ['dark', <IconMoon size={14} />]] as const).map(([t, icon]) => (
+          <button
+            key={t}
+            onClick={() => setTheme(t)}
+            title={t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark'}
+            className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded transition-colors ${
+              theme === t ? 'bg-surface-2 text-fg shadow-sm' : 'text-dim hover:text-muted'
+            }`}
+          >
+            {icon}
+          </button>
+        ))}
+      </div>
 
       <div className="hidden h-6 w-px bg-border md:block" />
 
@@ -134,15 +149,25 @@ export default function TopBar({ onMenuOpen }: { onMenuOpen?: () => void }) {
               </div>
             </div>
 
-            {/* Theme toggle inside menu */}
+            {/* Theme picker inside menu */}
+            <div className="p-2 border-b border-border">
+              <p className="mb-1.5 px-1 text-[11px] text-dim">Theme</p>
+              <div className="flex gap-1">
+                {([['system', <IconMonitor size={13} />, 'System'], ['light', <IconSun size={13} />, 'Light'], ['dark', <IconMoon size={13} />, 'Dark']] as const).map(([t, icon, label]) => (
+                  <button
+                    key={t}
+                    onClick={() => { setTheme(t); setMenuOpen(false) }}
+                    className={`flex flex-1 cursor-pointer flex-col items-center gap-1 rounded-md py-1.5 text-[11px] transition-colors ${
+                      theme === t ? 'bg-surface-2 text-fg' : 'text-dim hover:text-muted'
+                    }`}
+                  >
+                    {icon}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="p-1">
-              <button
-                onClick={() => { toggle(); setMenuOpen(false) }}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-md px-3 py-2 text-[13px] text-muted transition-colors hover:bg-surface-2 hover:text-fg"
-              >
-                {theme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
-                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-              </button>
 
               <button
                 onClick={handleLogout}

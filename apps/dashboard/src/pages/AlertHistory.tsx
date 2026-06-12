@@ -9,7 +9,7 @@ import type { AlertsFullResponse } from '../types'
 
 export default function AlertHistory() {
   const { selectedServerId } = useServer()
-  const { theme } = useTheme()
+  const { resolved: theme } = useTheme()
   const t = chartTheme(theme === 'dark')
   const [data, setData] = useState<AlertsFullResponse | null>(null)
   const [page, setPage] = useState(1)
