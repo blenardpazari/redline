@@ -9,8 +9,6 @@ import { useTheme } from '../context/ThemeContext'
 import { chartTheme } from '../lib/chartTheme'
 import { api } from '../lib/api'
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
 interface ModelMetrics {
   name: string
   accuracy: number
@@ -32,8 +30,6 @@ interface InsightsData {
   dataset: { total: number; class_counts: Record<string, number>; test_size: number }
   trained_at: string
 }
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function MetricBadge({ value, label }: { value: number; label: string }) {
   const pct = `${(value * 100).toFixed(1)}%`
@@ -188,8 +184,6 @@ function WinnerBadge() {
   )
 }
 
-// ── Main page ──────────────────────────────────────────────────────────────────
-
 export default function Insights() {
   const [data, setData] = useState<InsightsData | null>(null)
   const [error, setError] = useState('')
@@ -210,7 +204,6 @@ export default function Insights() {
     setRetrainMsg('Training started...')
     try {
       await api.post('/insights/retrain', {})
-      // poll until done
       const poll = setInterval(async () => {
         try {
           const s = await api.get<{ running: boolean; last_exit: number | null }>('/insights/retrain/status')
@@ -237,9 +230,28 @@ export default function Insights() {
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
           <p className="text-sm font-medium text-crit">{error}</p>
-          <code className="mt-2 block rounded bg-surface-2 px-3 py-2 font-mono text-xs text-muted">
-            cd apps/ml && python train.py
-          </code>
+          <p className="mt-1 text-xs text-muted">Train the model using your production logs:</p>
+          <button
+            onClick={handleRetrain}
+            disabled={retraining}
+            className="mt-4 flex items-center gap-1.5 rounded-md border border-border bg-surface-2 px-4 py-2 text-sm font-medium transition-colors hover:bg-surface hover:text-fg disabled:opacity-50 mx-auto"
+          >
+            {retraining ? (
+              <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+            ) : (
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            )}
+            {retraining ? 'Training...' : 'Train Model Now'}
+          </button>
+          {retrainMsg && (
+            <p className={`mt-3 text-xs ${retrainMsg.includes('✓') ? 'text-ok' : retrainMsg.includes('fail') || retrainMsg.includes('Failed') ? 'text-crit' : 'text-muted'}`}>
+              {retrainMsg}
+            </p>
+          )}
         </div>
       </div>
     </Layout>
@@ -259,7 +271,6 @@ export default function Insights() {
   return (
     <Layout>
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">ML Insights</h1>
@@ -308,7 +319,6 @@ export default function Insights() {
           </div>
         </div>
 
-        {/* Best model summary metrics */}
         <div className="flex gap-3 overflow-x-auto pb-1">
           {(['accuracy', 'precision', 'recall', 'f1'] as const).map(metric => (
             <MetricBadge key={metric} value={bestModel[metric] as number} label={metric} />
@@ -327,7 +337,6 @@ export default function Insights() {
           </div>
         </div>
 
-        {/* Model comparison + confusion matrix */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card title="Model Comparison — F1 Score">
             <ModelComparisonBar models={activeModels} metric="f1" />
@@ -351,7 +360,6 @@ export default function Insights() {
           </Card>
         </div>
 
-        {/* Per-class radar + feature importance + dataset */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {bestModel.per_class && (
             <Card title="Per-Class Precision / Recall / F1">
@@ -380,7 +388,6 @@ export default function Insights() {
           </Card>
         </div>
 
-        {/* Feature importance — Random Forest only */}
         {rfModel?.feature_importances && (
           <Card title="Feature Importance — Random Forest">
             <FeatureImportanceChart importances={rfModel.feature_importances} />
